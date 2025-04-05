@@ -233,4 +233,196 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+  
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+  
+  // Mood operations
+  async getMoodsByUserId(userId: number): Promise<Mood[]> {
+    return db
+      .select()
+      .from(moods)
+      .where(eq(moods.userId, userId))
+      .orderBy(desc(moods.date));
+  }
+  
+  async getMoodByDate(userId: number, date: Date): Promise<Mood | undefined> {
+    // Convert Date to format without time component for comparison
+    const dateStr = date.toISOString().split('T')[0];
+    
+    const [mood] = await db
+      .select()
+      .from(moods)
+      .where(
+        and(
+          eq(moods.userId, userId),
+          sql`DATE(${moods.date}) = ${dateStr}`
+        )
+      );
+    
+    return mood || undefined;
+  }
+  
+  async createMood(insertMood: InsertMood): Promise<Mood> {
+    const [mood] = await db
+      .insert(moods)
+      .values(insertMood)
+      .returning();
+    return mood;
+  }
+  
+  // Journal operations
+  async getJournalsByUserId(userId: number): Promise<Journal[]> {
+    return db
+      .select()
+      .from(journals)
+      .where(eq(journals.userId, userId))
+      .orderBy(desc(journals.createdAt));
+  }
+  
+  async getJournalById(id: number): Promise<Journal | undefined> {
+    const [journal] = await db
+      .select()
+      .from(journals)
+      .where(eq(journals.id, id));
+    return journal || undefined;
+  }
+  
+  async createJournal(insertJournal: InsertJournal): Promise<Journal> {
+    const [journal] = await db
+      .insert(journals)
+      .values(insertJournal)
+      .returning();
+    return journal;
+  }
+  
+  // Chat operations
+  async getChatMessagesByUserId(userId: number): Promise<ChatMessage[]> {
+    return db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.userId, userId))
+      .orderBy(chatMessages.createdAt);
+  }
+  
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const [message] = await db
+      .insert(chatMessages)
+      .values(insertMessage)
+      .returning();
+    return message;
+  }
+  
+  // Daily boosts operations
+  async getDailyBoostsByUserId(userId: number): Promise<DailyBoost[]> {
+    return db
+      .select()
+      .from(dailyBoosts)
+      .where(eq(dailyBoosts.userId, userId))
+      .orderBy(desc(dailyBoosts.createdAt));
+  }
+  
+  async getLatestDailyBoost(userId: number): Promise<DailyBoost | undefined> {
+    const [boost] = await db
+      .select()
+      .from(dailyBoosts)
+      .where(eq(dailyBoosts.userId, userId))
+      .orderBy(desc(dailyBoosts.createdAt))
+      .limit(1);
+    
+    return boost || undefined;
+  }
+  
+  async createDailyBoost(insertBoost: InsertDailyBoost): Promise<DailyBoost> {
+    const [boost] = await db
+      .insert(dailyBoosts)
+      .values(insertBoost)
+      .returning();
+    return boost;
+  }
+  
+  async markDailyBoostAsSeen(id: number): Promise<void> {
+    await db
+      .update(dailyBoosts)
+      .set({ seenAt: new Date() })
+      .where(eq(dailyBoosts.id, id));
+  }
+  
+  // User preferences operations
+  async getUserPreferences(userId: number): Promise<UserPreferences | undefined> {
+    const [prefs] = await db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, userId));
+    
+    return prefs || undefined;
+  }
+  
+  async setUserPreferences(insertPreferences: InsertUserPreferences): Promise<UserPreferences> {
+    // Check if preferences already exist for this user
+    const existingPrefs = await this.getUserPreferences(insertPreferences.userId);
+    
+    if (existingPrefs) {
+      // Update existing preferences
+      const [updatedPrefs] = await db
+        .update(userPreferences)
+        .set({ preferences: insertPreferences.preferences })
+        .where(eq(userPreferences.id, existingPrefs.id))
+        .returning();
+      return updatedPrefs;
+    } else {
+      // Create new preferences
+      const [prefs] = await db
+        .insert(userPreferences)
+        .values({
+          userId: insertPreferences.userId,
+          preferences: insertPreferences.preferences
+        })
+        .returning();
+      return prefs;
+    }
+  }
+  
+  async updateUserPreferences(
+    userId: number, 
+    preferencesUpdate: Partial<InsertUserPreferences['preferences']>
+  ): Promise<UserPreferences | undefined> {
+    const existingPrefs = await this.getUserPreferences(userId);
+    
+    if (!existingPrefs) {
+      return undefined;
+    }
+    
+    const newPreferences = {
+      ...existingPrefs.preferences,
+      ...preferencesUpdate
+    };
+    
+    const [updatedPrefs] = await db
+      .update(userPreferences)
+      .set({ preferences: newPreferences })
+      .where(eq(userPreferences.id, existingPrefs.id))
+      .returning();
+    
+    return updatedPrefs;
+  }
+}
+
+// Initialize database storage for Cribbles app
+export const storage = new DatabaseStorage();

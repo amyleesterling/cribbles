@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -69,6 +70,50 @@ export type InsertJournal = z.infer<typeof insertJournalSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertDailyBoost = z.infer<typeof insertDailyBoostSchema>;
 export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
+
+// Define relations
+export const usersRelations = relations(users, ({ many, one }) => ({
+  moods: many(moods),
+  journals: many(journals),
+  chatMessages: many(chatMessages),
+  dailyBoosts: many(dailyBoosts),
+  preferences: one(userPreferences),
+}));
+
+export const moodsRelations = relations(moods, ({ one }) => ({
+  user: one(users, {
+    fields: [moods.userId],
+    references: [users.id],
+  }),
+}));
+
+export const journalsRelations = relations(journals, ({ one }) => ({
+  user: one(users, {
+    fields: [journals.userId],
+    references: [users.id],
+  }),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  user: one(users, {
+    fields: [chatMessages.userId],
+    references: [users.id],
+  }),
+}));
+
+export const dailyBoostsRelations = relations(dailyBoosts, ({ one }) => ({
+  user: one(users, {
+    fields: [dailyBoosts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferences.userId],
+    references: [users.id],
+  }),
+}));
 
 export type User = typeof users.$inferSelect;
 export type Mood = typeof moods.$inferSelect;
