@@ -6,6 +6,8 @@ import {
   dailyBoosts, type DailyBoost, type InsertDailyBoost,
   userPreferences, type UserPreferences, type InsertUserPreferences
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
