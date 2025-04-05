@@ -11,9 +11,6 @@ import MobileNav from "./components/layout/mobile-nav";
 // Pages
 import Dashboard from "@/pages/dashboard";
 import DataChat from "@/pages/data-chat";
-import Insights from "@/pages/insights";
-import Mood from "@/pages/mood";
-import Journal from "@/pages/journal";
 import VisualInspiration from "@/pages/visual-inspiration";
 import Resources from "@/pages/resources";
 import Profile from "@/pages/profile";
