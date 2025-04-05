@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import MotionDot from "../ui/motion-dot";
-import { LayoutDashboard, MessageCircle, LineChart, SmilePlus, Menu } from "lucide-react";
+import { Home, MessageCircle, ImageIcon, FileText, Menu } from "lucide-react";
 
 type MobileNavProps = {
   currentPath: string;
@@ -15,7 +15,7 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
           <div className="h-8 w-8 rounded-lg bg-skyBlue flex items-center justify-center mr-3">
             <MotionDot />
           </div>
-          <h1 className="font-display font-bold text-xl">InsightFlow</h1>
+          <h1 className="font-display font-bold text-xl">ZenfulJoy</h1>
         </div>
       </nav>
       
@@ -27,8 +27,8 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
             currentPath === "/" ? "text-skyBlue" : "text-gray-500"
           }`}
         >
-          <LayoutDashboard className="h-5 w-5" />
-          <span className="text-xs">Dashboard</span>
+          <Home className="h-5 w-5" />
+          <span className="text-xs">Home</span>
         </Link>
         
         <Link 
@@ -38,37 +38,27 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
           }`}
         >
           <MessageCircle className="h-5 w-5" />
-          <span className="text-xs">Chat</span>
+          <span className="text-xs">Converse</span>
         </Link>
         
         <Link 
-          href="/insights" 
+          href="/visual-inspiration" 
           className={`flex flex-col items-center p-2 ${
-            currentPath === "/insights" ? "text-skyBlue" : "text-gray-500"
+            currentPath === "/visual-inspiration" ? "text-skyBlue" : "text-gray-500"
           }`}
         >
-          <LineChart className="h-5 w-5" />
-          <span className="text-xs">Insights</span>
+          <ImageIcon className="h-5 w-5" />
+          <span className="text-xs">Inspire</span>
         </Link>
         
         <Link 
-          href="/mood" 
+          href="/resources" 
           className={`flex flex-col items-center p-2 ${
-            currentPath === "/mood" ? "text-skyBlue" : "text-gray-500"
+            currentPath === "/resources" ? "text-skyBlue" : "text-gray-500"
           }`}
         >
-          <SmilePlus className="h-5 w-5" />
-          <span className="text-xs">Mood</span>
-        </Link>
-        
-        <Link 
-          href="/journal" 
-          className={`flex flex-col items-center p-2 ${
-            currentPath === "/journal" ? "text-skyBlue" : "text-gray-500"
-          }`}
-        >
-          <Menu className="h-5 w-5" />
-          <span className="text-xs">More</span>
+          <FileText className="h-5 w-5" />
+          <span className="text-xs">Library</span>
         </Link>
       </nav>
     </>

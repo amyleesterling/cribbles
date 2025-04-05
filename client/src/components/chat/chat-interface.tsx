@@ -36,7 +36,7 @@ export default function ChatInterface() {
       <CardHeader className="flex flex-row items-center justify-between p-6 border-b border-gray-200/30">
         <div className="flex items-center">
           <MotionDot />
-          <CardTitle className="font-display font-semibold text-xl ml-2">Chat with Your AI Coach</CardTitle>
+          <CardTitle className="font-display font-semibold text-xl ml-2">Conversations with Zenful</CardTitle>
         </div>
         <Button variant="ghost" size="icon">
           <Info className="h-5 w-5" />
@@ -49,22 +49,22 @@ export default function ChatInterface() {
             <div className="h-12 w-12 rounded-full bg-skyBlue/10 flex items-center justify-center mb-4">
               <MotionDot />
             </div>
-            <h3 className="text-lg font-display font-semibold mb-2">Welcome to InsightFlow</h3>
+            <h3 className="text-lg font-display font-semibold mb-2">Welcome to ZenfulJoy</h3>
             <p className="text-gray-600 mb-4">
-              I'm your AI wellness coach. How can I help your creative journey today?
+              I'm your AI companion on your journey to joy and personal growth. What's on your mind today?
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-lg">
-              <Button variant="outline" onClick={() => sendMessage("Tell me a mindfulness technique for creative focus")}>
-                Mindfulness techniques
+              <Button variant="outline" onClick={() => sendMessage("What makes a meaningful life?")}>
+                Meaningful life
               </Button>
-              <Button variant="outline" onClick={() => sendMessage("How can I improve my creative energy?")}>
-                Improve creative energy
+              <Button variant="outline" onClick={() => sendMessage("I've been feeling stuck lately")}>
+                Feeling stuck
               </Button>
-              <Button variant="outline" onClick={() => sendMessage("Give me a quick stress relief exercise")}>
-                Quick stress relief
+              <Button variant="outline" onClick={() => sendMessage("Share a thought-provoking question")}>
+                Thought-provoking question
               </Button>
-              <Button variant="outline" onClick={() => sendMessage("How does sleep affect creativity?")}>
-                Sleep and creativity
+              <Button variant="outline" onClick={() => sendMessage("What brings true joy?")}>
+                Sources of true joy
               </Button>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default function ChatInterface() {
                   <div className="w-8 h-8 rounded-full bg-skyBlue flex items-center justify-center mr-2">
                     <TypingIndicator />
                   </div>
-                  <div className="text-sm text-gray-500">InsightFlow is thinking...</div>
+                  <div className="text-sm text-gray-500">Zenful is thinking...</div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -98,7 +98,7 @@ export default function ChatInterface() {
         <form onSubmit={handleSubmit} className="flex items-center w-full">
           <Input
             type="text"
-            placeholder="Ask something about wellness or creativity..."
+            placeholder="Share your thoughts, ask a question, or just say hello..."
             className="flex-1 py-2 px-4 bg-gray-50 rounded-full focus:outline-none focus:ring-2 focus:ring-skyBlue"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
@@ -143,7 +143,7 @@ function ChatMessage({ message }: ChatMessageProps) {
           {message.content}
         </p>
         <div className="text-xs mt-1 opacity-70 text-right">
-          {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {message.createdAt ? new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
         </div>
       </div>
     </motion.div>

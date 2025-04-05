@@ -4,11 +4,9 @@ import { type User } from "@shared/schema";
 
 // Icons
 import { 
-  LayoutDashboard, 
+  Home, 
   MessageCircle, 
-  LineChart, 
-  SmilePlus, 
-  BookText, 
+  Sparkles, 
   ImageIcon, 
   FileText 
 } from "lucide-react";
@@ -20,16 +18,13 @@ type SidebarProps = {
 
 export default function Sidebar({ user, currentPath }: SidebarProps) {
   const navItems = [
-    { path: "/", label: "Dashboard", icon: <LayoutDashboard className="mr-3 h-5 w-5" /> },
-    { path: "/chat", label: "Data Chat", icon: <MessageCircle className="mr-3 h-5 w-5" /> },
-    { path: "/insights", label: "Insights", icon: <LineChart className="mr-3 h-5 w-5" /> },
-    { path: "/mood", label: "Mood Tracking", icon: <SmilePlus className="mr-3 h-5 w-5" /> },
-    { path: "/journal", label: "Journal", icon: <BookText className="mr-3 h-5 w-5" /> },
+    { path: "/", label: "Home", icon: <Home className="mr-3 h-5 w-5" /> },
+    { path: "/chat", label: "Conversations", icon: <MessageCircle className="mr-3 h-5 w-5" /> },
   ];
 
   const toolItems = [
     { path: "/visual-inspiration", label: "Visual Inspiration", icon: <ImageIcon className="mr-3 h-5 w-5" /> },
-    { path: "/resources", label: "Resources", icon: <FileText className="mr-3 h-5 w-5" /> },
+    { path: "/resources", label: "Wonder Library", icon: <FileText className="mr-3 h-5 w-5" /> },
   ];
 
   return (
@@ -39,7 +34,7 @@ export default function Sidebar({ user, currentPath }: SidebarProps) {
           <div className="h-8 w-8 rounded-lg bg-skyBlue flex items-center justify-center mr-3">
             <MotionDot />
           </div>
-          <h1 className="font-display font-bold text-xl">InsightFlow</h1>
+          <h1 className="font-display font-bold text-xl">ZenfulJoy</h1>
         </div>
       </div>
       

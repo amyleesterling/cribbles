@@ -71,9 +71,6 @@ function Router() {
         <Switch>
           <Route path="/" component={Dashboard} />
           <Route path="/chat" component={DataChat} />
-          <Route path="/insights" component={Insights} />
-          <Route path="/mood" component={Mood} />
-          <Route path="/journal" component={Journal} />
           <Route path="/visual-inspiration" component={VisualInspiration} />
           <Route path="/resources" component={Resources} />
           <Route path="/profile" component={Profile} />
