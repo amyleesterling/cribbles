@@ -19,7 +19,7 @@ type SidebarProps = {
 export default function Sidebar({ user, currentPath }: SidebarProps) {
   const navItems = [
     { path: "/", label: "Home", icon: <Home className="mr-3 h-5 w-5" /> },
-    { path: "/chat", label: "Conversations", icon: <MessageCircle className="mr-3 h-5 w-5" /> },
+    { path: "/data-chat", label: "Chat", icon: <MessageCircle className="mr-3 h-5 w-5" /> },
   ];
 
   const toolItems = [
@@ -34,7 +34,7 @@ export default function Sidebar({ user, currentPath }: SidebarProps) {
           <div className="h-8 w-8 rounded-lg bg-skyBlue flex items-center justify-center mr-3">
             <MotionDot />
           </div>
-          <h1 className="font-display font-bold text-xl">ZenfulJoy</h1>
+          <h1 className="font-display font-bold text-xl">Cribbles</h1>
         </div>
       </div>
       

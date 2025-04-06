@@ -15,7 +15,7 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
           <div className="h-8 w-8 rounded-lg bg-skyBlue flex items-center justify-center mr-3">
             <MotionDot />
           </div>
-          <h1 className="font-display font-bold text-xl">ZenfulJoy</h1>
+          <h1 className="font-display font-bold text-xl">Cribbles</h1>
         </div>
       </nav>
       
@@ -32,13 +32,13 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
         </Link>
         
         <Link 
-          href="/chat" 
+          href="/data-chat" 
           className={`flex flex-col items-center p-2 ${
-            currentPath === "/chat" ? "text-skyBlue" : "text-gray-500"
+            currentPath === "/data-chat" ? "text-skyBlue" : "text-gray-500"
           }`}
         >
           <MessageCircle className="h-5 w-5" />
-          <span className="text-xs">Converse</span>
+          <span className="text-xs">Chat</span>
         </Link>
         
         <Link 

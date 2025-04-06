@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 import Sidebar from "./components/layout/sidebar";
 import MobileNav from "./components/layout/mobile-nav";
+import WelcomeScreen from "./components/welcome/welcome-screen";
 
 // Pages
 import Dashboard from "@/pages/dashboard";
@@ -63,6 +64,9 @@ function Router() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-softWhite">
+      {/* Welcome Screen */}
+      <WelcomeScreen />
+      
       {/* Sidebar - Desktop only */}
       <Sidebar user={user} currentPath={location} />
       
@@ -70,7 +74,7 @@ function Router() {
       <main className="flex-1 overflow-y-auto bg-softWhite pb-16 lg:pb-0">
         <Switch>
           <Route path="/" component={Dashboard} />
-          <Route path="/chat" component={DataChat} />
+          <Route path="/data-chat" component={DataChat} />
           <Route path="/visual-inspiration" component={VisualInspiration} />
           <Route path="/resources" component={Resources} />
           <Route path="/profile" component={Profile} />

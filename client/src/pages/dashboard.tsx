@@ -72,7 +72,7 @@ export default function Dashboard() {
             <h1 className="font-display font-bold text-2xl md:text-3xl mb-1">
               {greeting}, {user?.name?.split(' ')[0] || 'there'}!
             </h1>
-            <p className="text-gray-600">I'm {companionName}, your companion for zenful joy.</p>
+            <p className="text-gray-600">I'm {companionName}, your companion for Cribbles.</p>
           </div>
         </div>
         <motion.p 
