@@ -1,12 +1,34 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { 
+  BookmarkPlus, 
+  Download, 
+  Loader2, 
+  RefreshCw, 
+  Save, 
+  Sparkles,
+  Heart,
+  Sun,
+  Moon,
+  TreePine,
+  Waves,
+  Flower2
+} from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectGroup, 
+  SelectItem, 
+  SelectLabel, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { queryClient } from "@/lib/queryClient";
 
 interface ImageGeneratorProps {
   samplePrompts?: string[];
@@ -15,8 +37,14 @@ interface ImageGeneratorProps {
 export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorProps) {
   const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
+  const [vibe, setVibe] = useState("calm");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [generatedImageData, setGeneratedImageData] = useState<{
+    id?: number;
+    imageUrl: string;
+    prompt: string;
+  } | null>(null);
   
   const generateImage = async (customPrompt?: string) => {
     const finalPrompt = customPrompt || prompt;
@@ -33,14 +61,20 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
     setIsGenerating(true);
     
     try {
-      const response = await apiRequest("POST", "/api/inspiration", { prompt: finalPrompt });
-      const data = await response.json();
+      const response = await apiRequest("POST", "/api/inspiration", {
+        prompt: finalPrompt,
+        vibe: vibe
+      });
       
-      setGeneratedImage(data.imageUrl);
+      const data = await response.json();
+      setGeneratedImageData(data);
+      
+      // Invalidate the gallery query to refresh gallery view
+      queryClient.invalidateQueries({ queryKey: ["/api/inspiration/gallery"] });
       
       toast({
         title: "Image generated",
-        description: "Your inspiration image has been created.",
+        description: "Your inspiration image has been created and saved to your gallery.",
       });
     } catch (error) {
       toast({
@@ -60,14 +94,26 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
   };
   
   const handleDownload = () => {
-    if (!generatedImage) return;
+    if (!generatedImageData?.imageUrl) return;
     
     const link = document.createElement("a");
-    link.href = generatedImage;
-    link.download = `inspiration-${new Date().getTime()}.jpg`;
+    link.href = generatedImageData.imageUrl;
+    link.download = `cribbles-inspiration-${new Date().getTime()}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+  
+  const getVibeIcon = (vibeType: string) => {
+    switch(vibeType) {
+      case "calm": return <Waves className="h-4 w-4 mr-2" />;
+      case "joyful": return <Sun className="h-4 w-4 mr-2" />;
+      case "serene": return <Moon className="h-4 w-4 mr-2" />;
+      case "natural": return <TreePine className="h-4 w-4 mr-2" />;
+      case "loving": return <Heart className="h-4 w-4 mr-2" />;
+      case "peaceful": return <Flower2 className="h-4 w-4 mr-2" />;
+      default: return <Waves className="h-4 w-4 mr-2" />;
+    }
   };
   
   return (
@@ -83,6 +129,56 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
               onChange={(e) => setPrompt(e.target.value)}
               className="h-32 resize-none"
             />
+          </div>
+          
+          <div>
+            <Label htmlFor="vibe" className="mb-2 block">Select the vibe for your image</Label>
+            <Select value={vibe} onValueChange={setVibe}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a vibe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Image Vibe</SelectLabel>
+                  <SelectItem value="calm">
+                    <div className="flex items-center">
+                      <Waves className="h-4 w-4 mr-2" />
+                      <span>Calm</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="joyful">
+                    <div className="flex items-center">
+                      <Sun className="h-4 w-4 mr-2" />
+                      <span>Joyful</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="serene">
+                    <div className="flex items-center">
+                      <Moon className="h-4 w-4 mr-2" />
+                      <span>Serene</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="natural">
+                    <div className="flex items-center">
+                      <TreePine className="h-4 w-4 mr-2" />
+                      <span>Natural</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="loving">
+                    <div className="flex items-center">
+                      <Heart className="h-4 w-4 mr-2" />
+                      <span>Loving</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="peaceful">
+                    <div className="flex items-center">
+                      <Flower2 className="h-4 w-4 mr-2" />
+                      <span>Peaceful</span>
+                    </div>
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
           
           <Button
@@ -139,13 +235,13 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
                 <Loader2 className="animate-spin h-10 w-10 text-skyBlue mb-2 mx-auto" />
                 <p className="text-gray-500">Creating your inspiration...</p>
               </motion.div>
-            ) : generatedImage ? (
+            ) : generatedImageData ? (
               <motion.img
                 key="image"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                src={generatedImage}
+                src={generatedImageData.imageUrl}
                 alt="Generated inspiration"
                 className="w-full h-full object-contain"
               />
@@ -164,24 +260,33 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
           </AnimatePresence>
         </div>
         
-        {generatedImage && (
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => generateImage()}
-              disabled={isGenerating || !prompt}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleDownload}
-            >
-              <Download className="mr-2 h-4 w-4" /> Download
-            </Button>
-          </div>
+        {generatedImageData && (
+          <>
+            <div className="w-full mb-4">
+              <div className="flex items-center">
+                {getVibeIcon(vibe)}
+                <span className="text-sm font-medium">{vibe.charAt(0).toUpperCase() + vibe.slice(1)} Vibe</span>
+              </div>
+              <p className="text-sm text-gray-500 mt-1 line-clamp-2">{generatedImageData.prompt}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => generateImage()}
+                disabled={isGenerating || !prompt}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleDownload}
+              >
+                <Download className="mr-2 h-4 w-4" /> Download
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </div>

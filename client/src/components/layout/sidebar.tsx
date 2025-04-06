@@ -28,19 +28,19 @@ export default function Sidebar({ user, currentPath }: SidebarProps) {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-200">
+    <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-skyBlue/20">
       <div className="p-6">
         <div className="flex items-center">
-          <div className="h-8 w-8 rounded-lg bg-skyBlue flex items-center justify-center mr-3">
+          <div className="h-8 w-8 rounded-lg cribbles-gradient flex items-center justify-center mr-3">
             <MotionDot />
           </div>
-          <h1 className="font-display font-bold text-xl">Cribbles</h1>
+          <h1 className="font-display font-bold text-xl text-darkGray">Cribbles</h1>
         </div>
       </div>
       
       <nav className="flex-1 px-4 py-2">
         <div className="mb-8">
-          <p className="text-sm uppercase text-gray-400 font-medium mb-4 px-3">Main</p>
+          <p className="text-sm uppercase text-vibrantPink font-medium mb-4 px-3">Main</p>
           {navItems.map((item) => (
             <Link 
               key={item.path} 
@@ -48,7 +48,7 @@ export default function Sidebar({ user, currentPath }: SidebarProps) {
               className={`flex items-center mb-3 px-3 py-2 rounded-lg ${
                 currentPath === item.path 
                   ? "bg-skyBlue text-white" 
-                  : "text-gray-700 hover:bg-gray-100"
+                  : "text-darkGray hover:bg-softBlue transition-colors"
               }`}
             >
               {item.icon}
@@ -58,15 +58,15 @@ export default function Sidebar({ user, currentPath }: SidebarProps) {
         </div>
         
         <div className="mb-8">
-          <p className="text-sm uppercase text-gray-400 font-medium mb-4 px-3">Tools</p>
+          <p className="text-sm uppercase text-vibrantPink font-medium mb-4 px-3">Tools</p>
           {toolItems.map((item) => (
             <Link 
               key={item.path} 
               href={item.path}
               className={`flex items-center mb-3 px-3 py-2 rounded-lg ${
                 currentPath === item.path 
-                  ? "bg-skyBlue text-white" 
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-goldenYellow text-white" 
+                  : "text-darkGray hover:bg-softBlue transition-colors"
               }`}
             >
               {item.icon}
@@ -77,17 +77,17 @@ export default function Sidebar({ user, currentPath }: SidebarProps) {
       </nav>
       
       <div className="p-6 mt-auto">
-        <div className="bg-gray-50 rounded-2xl p-4">
+        <div className="bg-softBlue rounded-2xl p-4 border border-skyBlue/20">
           <div className="flex items-center mb-3">
-            <div className="w-10 h-10 rounded-full bg-skyBlue/20 flex items-center justify-center mr-3 text-skyBlue">
+            <div className="w-10 h-10 rounded-full cribbles-gradient flex items-center justify-center mr-3 text-white font-bold">
               {user.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="font-medium">{user.name}</p>
-              <p className="text-xs text-gray-500">{user.role || "Wellness Explorer"}</p>
+              <p className="font-medium text-darkGray">{user.name}</p>
+              <p className="text-xs text-vibrantPink">{user.role || "Wellness Explorer"}</p>
             </div>
           </div>
-          <Link href="/profile" className="block w-full py-2 rounded-lg text-sm border border-gray-200 hover:bg-gray-100 text-center">
+          <Link href="/profile" className="block w-full py-2 rounded-lg text-sm border border-skyBlue/20 hover:bg-skyBlue hover:text-white transition-colors text-center">
             View Profile
           </Link>
         </div>

@@ -55,6 +55,16 @@ export const userPreferences = pgTable("user_preferences", {
   }>(),
 });
 
+export const inspirationImages = pgTable("inspiration_images", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  prompt: text("prompt").notNull(),
+  imageUrl: text("image_url").notNull(),
+  vibe: text("vibe").default("calm"),
+  isDaily: boolean("is_daily").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertMoodSchema = createInsertSchema(moods).omit({ id: true });
@@ -62,6 +72,7 @@ export const insertJournalSchema = createInsertSchema(journals).omit({ id: true,
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ id: true, createdAt: true });
 export const insertDailyBoostSchema = createInsertSchema(dailyBoosts).omit({ id: true, createdAt: true, seenAt: true });
 export const insertUserPreferencesSchema = createInsertSchema(userPreferences).omit({ id: true });
+export const insertInspirationImageSchema = createInsertSchema(inspirationImages).omit({ id: true, createdAt: true });
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -70,6 +81,7 @@ export type InsertJournal = z.infer<typeof insertJournalSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertDailyBoost = z.infer<typeof insertDailyBoostSchema>;
 export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
+export type InsertInspirationImage = z.infer<typeof insertInspirationImageSchema>;
 
 // Define relations
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -77,6 +89,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   journals: many(journals),
   chatMessages: many(chatMessages),
   dailyBoosts: many(dailyBoosts),
+  inspirationImages: many(inspirationImages),
   preferences: one(userPreferences),
 }));
 
@@ -115,9 +128,17 @@ export const userPreferencesRelations = relations(userPreferences, ({ one }) => 
   }),
 }));
 
+export const inspirationImagesRelations = relations(inspirationImages, ({ one }) => ({
+  user: one(users, {
+    fields: [inspirationImages.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type Mood = typeof moods.$inferSelect;
 export type Journal = typeof journals.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type DailyBoost = typeof dailyBoosts.$inferSelect;
 export type UserPreferences = typeof userPreferences.$inferSelect;
+export type InspirationImage = typeof inspirationImages.$inferSelect;

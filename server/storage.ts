@@ -4,7 +4,8 @@ import {
   journals, type Journal, type InsertJournal,
   chatMessages, type ChatMessage, type InsertChatMessage,
   dailyBoosts, type DailyBoost, type InsertDailyBoost,
-  userPreferences, type UserPreferences, type InsertUserPreferences
+  userPreferences, type UserPreferences, type InsertUserPreferences,
+  inspirationImages, type InspirationImage, type InsertInspirationImage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -39,6 +40,11 @@ export interface IStorage {
   getUserPreferences(userId: number): Promise<UserPreferences | undefined>;
   setUserPreferences(preferences: InsertUserPreferences): Promise<UserPreferences>;
   updateUserPreferences(userId: number, preferences: Partial<InsertUserPreferences['preferences']>): Promise<UserPreferences | undefined>;
+  
+  // Inspiration images operations
+  getInspirationImagesByUserId(userId: number): Promise<InspirationImage[]>;
+  getDailyInspirationImage(userId: number): Promise<InspirationImage | undefined>;
+  saveInspirationImage(image: InsertInspirationImage): Promise<InspirationImage>;
 }
 
 export class MemStorage implements IStorage {
@@ -48,6 +54,7 @@ export class MemStorage implements IStorage {
   private chatMessages: Map<number, ChatMessage>;
   private dailyBoosts: Map<number, DailyBoost>;
   private userPreferences: Map<number, UserPreferences>;
+  private inspirationImages: Map<number, InspirationImage>;
   
   private currentUserId: number;
   private currentMoodId: number;
@@ -55,6 +62,7 @@ export class MemStorage implements IStorage {
   private currentChatMessageId: number;
   private currentDailyBoostId: number;
   private currentUserPreferencesId: number;
+  private currentInspirationImageId: number;
 
   constructor() {
     this.users = new Map();
@@ -63,6 +71,7 @@ export class MemStorage implements IStorage {
     this.chatMessages = new Map();
     this.dailyBoosts = new Map();
     this.userPreferences = new Map();
+    this.inspirationImages = new Map();
     
     this.currentUserId = 1;
     this.currentMoodId = 1;
@@ -70,6 +79,7 @@ export class MemStorage implements IStorage {
     this.currentChatMessageId = 1;
     this.currentDailyBoostId = 1;
     this.currentUserPreferencesId = 1;
+    this.currentInspirationImageId = 1;
     
     // Adding a demo user
     const demoUser: User = {
@@ -230,6 +240,34 @@ export class MemStorage implements IStorage {
     
     this.userPreferences.set(existingPrefs.id, updatedPreferences);
     return updatedPreferences;
+  }
+  
+  // Inspiration images operations
+  async getInspirationImagesByUserId(userId: number): Promise<InspirationImage[]> {
+    return Array.from(this.inspirationImages.values())
+      .filter((image) => image.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+  
+  async getDailyInspirationImage(userId: number): Promise<InspirationImage | undefined> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return Array.from(this.inspirationImages.values()).find(image => {
+      if (image.userId !== userId || !image.isDaily) return false;
+      
+      const imageDate = new Date(image.createdAt);
+      imageDate.setHours(0, 0, 0, 0);
+      
+      return imageDate.getTime() === today.getTime();
+    });
+  }
+  
+  async saveInspirationImage(insertImage: InsertInspirationImage): Promise<InspirationImage> {
+    const id = this.currentInspirationImageId++;
+    const image: InspirationImage = { ...insertImage, id, createdAt: new Date() };
+    this.inspirationImages.set(id, image);
+    return image;
   }
 }
 
@@ -421,6 +459,41 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedPrefs;
+  }
+  
+  // Inspiration images operations
+  async getInspirationImagesByUserId(userId: number): Promise<InspirationImage[]> {
+    return db
+      .select()
+      .from(inspirationImages)
+      .where(eq(inspirationImages.userId, userId))
+      .orderBy(desc(inspirationImages.createdAt));
+  }
+  
+  async getDailyInspirationImage(userId: number): Promise<InspirationImage | undefined> {
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    
+    const [image] = await db
+      .select()
+      .from(inspirationImages)
+      .where(
+        and(
+          eq(inspirationImages.userId, userId),
+          eq(inspirationImages.isDaily, true),
+          sql`DATE(${inspirationImages.createdAt}) = ${dateStr}`
+        )
+      );
+      
+    return image || undefined;
+  }
+  
+  async saveInspirationImage(insertImage: InsertInspirationImage): Promise<InspirationImage> {
+    const [image] = await db
+      .insert(inspirationImages)
+      .values(insertImage)
+      .returning();
+    return image;
   }
 }
 

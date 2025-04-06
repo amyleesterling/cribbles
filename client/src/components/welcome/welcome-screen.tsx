@@ -31,7 +31,7 @@ export default function WelcomeScreen() {
       transition={{ duration: 0.5 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
     >
-      <Card className="max-w-lg w-full bg-white rounded-xl shadow-xl overflow-hidden">
+      <Card className="max-w-lg w-full bg-white rounded-xl shadow-xl overflow-hidden border-0">
         <div className="relative">
           <img 
             src={welcomeImage} 
@@ -43,7 +43,7 @@ export default function WelcomeScreen() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-gray-700 hover:bg-white/20"
+              className="text-white hover:bg-white/20 backdrop-blur-sm"
               onClick={() => setIsVisible(false)}
             >
               Skip
@@ -52,26 +52,26 @@ export default function WelcomeScreen() {
         </div>
         
         <div className="p-6 text-center">
-          <h2 className="text-2xl font-display font-bold mb-2">Your Friend for Zenful Joy</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-display font-bold mb-2 text-darkGray">Your Friend for Zenful Joy</h2>
+          <p className="text-darkGray/70 mb-6">
             Cribbles is your personal companion who will chat with you, learn about your life,
             and provide beautiful imagery and wisdom to inspire wonder and joy.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/data-chat">
-              <Button className="w-full sm:w-auto bg-skyBlue hover:bg-skyBlue/90 text-white">
+              <Button className="w-full sm:w-auto cribbles-button-primary">
                 <MessageCircle className="mr-2 h-4 w-4" /> Let's Chat
               </Button>
             </Link>
             <Link href="/visual-inspiration">
-              <Button variant="outline" className="w-full sm:w-auto border-skyBlue text-skyBlue hover:bg-skyBlue/10">
+              <Button className="w-full sm:w-auto cribbles-button-secondary">
                 <Sparkles className="mr-2 h-4 w-4" /> Inspire Me
               </Button>
             </Link>
             <Button 
-              variant="ghost" 
-              className="w-full sm:w-auto mt-2 sm:mt-0"
+              variant="outline" 
+              className="w-full sm:w-auto mt-2 sm:mt-0 border-vibrantPink text-vibrantPink hover:bg-vibrantPink/10"
               onClick={() => setIsVisible(false)}
             >
               Continue to Dashboard

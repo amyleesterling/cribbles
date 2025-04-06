@@ -2,7 +2,14 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateDailyBoost, chatWithCoach, generateInspirationImage, analyzeJournalEntry } from "./openai";
-import { insertUserSchema, insertMoodSchema, insertJournalSchema, insertChatMessageSchema, insertUserPreferencesSchema } from "@shared/schema";
+import { 
+  insertUserSchema, 
+  insertMoodSchema, 
+  insertJournalSchema, 
+  insertChatMessageSchema, 
+  insertUserPreferencesSchema,
+  insertInspirationImageSchema
+} from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -243,18 +250,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Visual Inspiration API
+  // Generate a new inspiration image
   app.post("/api/inspiration", async (req, res) => {
     const schema = z.object({
-      prompt: z.string().min(1)
+      prompt: z.string().min(1),
+      vibe: z.string().optional(),
+      isDaily: z.boolean().optional()
     });
     
     try {
-      const { prompt } = schema.parse(req.body);
+      const { prompt, vibe, isDaily } = schema.parse(req.body);
+      const userId = 1; // Using demo user for now
+      
+      // Generate the image
       const imageUrl = await generateInspirationImage(prompt);
-      res.json({ imageUrl });
+      
+      // Save to database
+      const savedImage = await storage.saveInspirationImage({
+        userId,
+        prompt,
+        imageUrl,
+        vibe: vibe || "calm",
+        isDaily: isDaily || false
+      });
+      
+      res.json(savedImage);
     } catch (error) {
+      console.error("Inspiration image error:", error);
       res.status(400).json({ message: "Could not generate inspiration image" });
     }
+  });
+  
+  // Get daily inspiration image
+  app.get("/api/inspiration/daily", async (req, res) => {
+    const userId = 1; // Using demo user for now
+    let dailyImage = await storage.getDailyInspirationImage(userId);
+    
+    // If no daily image exists for today, generate one
+    if (!dailyImage) {
+      try {
+        // Get a random calming prompt
+        const prompts = [
+          "A serene mountain lake at sunrise with gentle fog",
+          "Cherry blossoms falling gently in a peaceful Japanese garden",
+          "A cozy cabin in the woods with warm light glowing from within",
+          "Sunlight filtering through tall trees in a misty forest",
+          "A peaceful meadow of wildflowers at golden hour"
+        ];
+        const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+        
+        // Generate the image
+        const imageUrl = await generateInspirationImage(randomPrompt);
+        
+        // Save to database
+        dailyImage = await storage.saveInspirationImage({
+          userId,
+          prompt: randomPrompt,
+          imageUrl,
+          vibe: "calm",
+          isDaily: true
+        });
+      } catch (error) {
+        console.error("Daily inspiration image error:", error);
+        return res.status(500).json({ message: "Could not generate daily inspiration image" });
+      }
+    }
+    
+    res.json(dailyImage);
+  });
+  
+  // Get user's gallery of saved inspiration images
+  app.get("/api/inspiration/gallery", async (req, res) => {
+    const userId = 1; // Using demo user for now
+    const images = await storage.getInspirationImagesByUserId(userId);
+    res.json(images);
   });
 
   const httpServer = createServer(app);
