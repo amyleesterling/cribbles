@@ -15,6 +15,14 @@ async function retryWithBackoff<T>(
     try {
       return await fn();
     } catch (error: any) {
+      // If it's an insufficient quota error, no need to retry
+      if (error.code === 'insufficient_quota' || 
+          error.error?.code === 'insufficient_quota' ||
+          error.message?.includes("exceeded your current quota")) {
+        console.error("OpenAI API quota exceeded. Please check your billing details.");
+        throw new Error("API quota exceeded. The application has limited functionality until the quota is renewed.");
+      }
+      
       // If we've used all our retries, or it's not a rate limit error, rethrow
       if (
         currentRetry >= retries || 

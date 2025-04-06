@@ -239,12 +239,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userId = 1; // Using demo user for now
     
     try {
-      const updatedPreferences = await storage.updateUserPreferences(userId, req.body);
-      if (!updatedPreferences) {
-        return res.status(404).json({ message: "Preferences not found" });
+      // Get existing preferences
+      let preferences = await storage.getUserPreferences(userId);
+      
+      // If preferences don't exist, create them first
+      if (!preferences) {
+        preferences = await storage.setUserPreferences({
+          userId,
+          preferences: {}
+        });
       }
+      
+      // Now update the preferences
+      const updatedPreferences = await storage.updateUserPreferences(userId, req.body.preferences);
+      if (!updatedPreferences) {
+        return res.status(500).json({ message: "Failed to update preferences" });
+      }
+      
       res.json(updatedPreferences);
     } catch (error) {
+      console.error("Error updating preferences:", error);
       res.status(400).json({ message: "Invalid request" });
     }
   });
