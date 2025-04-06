@@ -50,6 +50,8 @@ export const userPreferences = pgTable("user_preferences", {
   userId: integer("user_id").notNull().references(() => users.id).unique(),
   preferences: json("preferences").notNull().$type<{
     notificationTime?: string;
+    eveningBoostEnabled?: boolean;
+    eveningBoostTime?: string;
     topicPreferences?: string[];
     wellnessGoals?: string[];
   }>(),

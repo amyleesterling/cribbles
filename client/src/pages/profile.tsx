@@ -52,9 +52,10 @@ export default function Profile() {
   // Form state
   const [formData, setFormData] = useState({
     name: "",
-    role: "",
     bio: "",
     notificationTime: "08:00",
+    eveningBoostEnabled: false,
+    eveningBoostTime: "19:00",
     wellnessGoals: [] as string[],
     topicPreferences: [] as string[]
   });
@@ -64,9 +65,10 @@ export default function Profile() {
     if (user && preferences) {
       setFormData({
         name: user.name,
-        role: user.role || "",
         bio: "",
         notificationTime: preferences.preferences.notificationTime || "08:00",
+        eveningBoostEnabled: preferences.preferences.eveningBoostEnabled || false,
+        eveningBoostTime: preferences.preferences.eveningBoostTime || "19:00",
         wellnessGoals: preferences.preferences.wellnessGoals || [],
         topicPreferences: preferences.preferences.topicPreferences || []
       });
@@ -78,6 +80,8 @@ export default function Profile() {
       return apiRequest("PATCH", "/api/preferences", {
         preferences: {
           notificationTime: data.notificationTime,
+          eveningBoostEnabled: data.eveningBoostEnabled,
+          eveningBoostTime: data.eveningBoostTime,
           wellnessGoals: data.wellnessGoals,
           topicPreferences: data.topicPreferences
         }
@@ -199,6 +203,36 @@ export default function Profile() {
                     <p className="text-xs text-gray-500">Choose when you'd like to receive your daily boost</p>
                   </div>
                   
+                  <div className="grid gap-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="eveningBoostEnabled" 
+                        checked={formData.eveningBoostEnabled}
+                        onCheckedChange={(checked) => 
+                          setFormData({...formData, eveningBoostEnabled: checked === true})
+                        }
+                      />
+                      <Label 
+                        htmlFor="eveningBoostEnabled"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Receive a second daily boost in the evening
+                      </Label>
+                    </div>
+                    
+                    {formData.eveningBoostEnabled && (
+                      <div className="ml-6 mt-2">
+                        <Input 
+                          id="eveningBoostTime" 
+                          type="time"
+                          value={formData.eveningBoostTime}
+                          onChange={(e) => setFormData({...formData, eveningBoostTime: e.target.value})}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Choose when you'd like to receive your evening boost</p>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="flex justify-end gap-2 mt-4">
                     <Button 
                       type="button" 
@@ -244,6 +278,13 @@ export default function Profile() {
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Daily Boost Time</h3>
                     <p>{preferences?.preferences.notificationTime || "08:00 AM"}</p>
                   </div>
+                  
+                  {preferences?.preferences.eveningBoostEnabled && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 mb-1">Evening Boost Time</h3>
+                      <p>{preferences?.preferences.eveningBoostTime || "7:00 PM"}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
