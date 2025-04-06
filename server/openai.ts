@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-// Try using gpt-4 instead of gpt-4o which may have availability issues
+// Try using gpt-3.5-turbo which is available with all accounts
 if (!process.env.OPENAI_API_KEY) {
   console.error('ERROR: OPENAI_API_KEY environment variable is not set');
   throw new Error('OPENAI_API_KEY environment variable is required');
@@ -105,7 +105,7 @@ export async function generateDailyBoost(userInfo: {
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-4",  // Changed from gpt-4o which may not be available in all regions
+        model: "gpt-3.5-turbo",  // Using gpt-3.5-turbo which is widely available with all OpenAI accounts
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" }
       })
@@ -177,7 +177,7 @@ export async function chatWithCoach(
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-4",  // Changed from gpt-4o which may not be available in all regions
+        model: "gpt-3.5-turbo",  // Using gpt-3.5-turbo which is widely available with all OpenAI accounts
         messages: messages as any,
         temperature: 0.7,
         max_tokens: 500
@@ -217,7 +217,7 @@ export async function analyzeJournalEntry(
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-4",  // Changed from gpt-4o which may not be available in all regions
+        model: "gpt-3.5-turbo",  // Using gpt-3.5-turbo which is widely available with all OpenAI accounts
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" }
       })
