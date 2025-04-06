@@ -1,19 +1,13 @@
 import OpenAI from "openai";
 
-// Try using gpt-3.5-turbo which is available with all accounts
-if (!process.env.OPENAI_API_KEY) {
-  console.error('ERROR: OPENAI_API_KEY environment variable is not set');
-  throw new Error('OPENAI_API_KEY environment variable is required');
-}
-
-// Add more detailed logging for troubleshooting
-console.log(`OpenAI API Key exists: ${!!process.env.OPENAI_API_KEY}`);
-console.log(`OpenAI API Key length: ${process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0}`);
-
-const openai = new OpenAI({ 
+// Initialize OpenAI client if API key exists
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY,
-  dangerouslyAllowBrowser: false // Make sure we're not using the API client in the browser
-});
+  dangerouslyAllowBrowser: false
+}) : null;
+
+// Log OpenAI configuration status
+console.log(`OpenAI client initialized: ${!!openai}`);
 
 // Helper function to retry API calls with exponential backoff
 async function retryWithBackoff<T>(
