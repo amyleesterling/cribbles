@@ -6,6 +6,7 @@ import type { ChatMessage } from "@shared/schema";
 
 export function useChat() {
   const [isTyping, setIsTyping] = useState(false);
+  const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -20,7 +21,18 @@ export function useChat() {
   
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest("POST", "/api/chat", { content });
+      try {
+        return await apiRequest("POST", "/api/chat", { content });
+      } catch (error: any) {
+        // Check if the error is related to API quota
+        if (error?.message?.includes("quota") || 
+            error?.message?.includes("exceeded") ||
+            error?.status === 429) {
+          setIsQuotaExceeded(true);
+          throw new Error("API quota exceeded");
+        }
+        throw error;
+      }
     },
     onMutate: () => {
       setIsTyping(true);
@@ -32,13 +44,27 @@ export function useChat() {
         setIsTyping(false);
       }, 1000);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       setIsTyping(false);
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
+      
+      if (error?.message?.includes("quota") || isQuotaExceeded) {
+        toast({
+          title: "AI Service Unavailable",
+          description: "Our AI is taking a little break. Try our other features while we restore service.",
+          variant: "default",
+        });
+        
+        // Automatically create a simulated response
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/chat"] });
+        }, 1000);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to send message. Please try again.",
+          variant: "destructive",
+        });
+      }
       console.error("Chat error:", error);
     },
   });

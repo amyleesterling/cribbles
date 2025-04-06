@@ -100,19 +100,18 @@ export default function Dashboard() {
 
       {/* Daily Image and Quote */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
-        {/* Daily Image */}
+        {/* Cribbles Welcome Image */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
           className="rounded-xl overflow-hidden h-64 shadow-md"
         >
-          <div className="h-full w-full bg-gradient-to-br from-skyBlue/30 to-indigo-200 flex items-center justify-center">
-            <div className="text-center p-6">
-              <p className="text-gray-700 text-lg mb-4">Today's inspiration will appear here</p>
-              <p className="text-sm text-gray-600">(OpenAI image generation)</p>
-            </div>
-          </div>
+          <img 
+            src="/attached_assets/welcome to cribbles.png" 
+            alt="Welcome to Cribbles" 
+            className="h-full w-full object-cover"
+          />
         </motion.div>
         
         {/* Daily Quote */}
