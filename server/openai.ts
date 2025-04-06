@@ -1,12 +1,19 @@
 import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+// Try using gpt-4 instead of gpt-4o which may have availability issues
 if (!process.env.OPENAI_API_KEY) {
   console.error('ERROR: OPENAI_API_KEY environment variable is not set');
   throw new Error('OPENAI_API_KEY environment variable is required');
 }
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Add more detailed logging for troubleshooting
+console.log(`OpenAI API Key exists: ${!!process.env.OPENAI_API_KEY}`);
+console.log(`OpenAI API Key length: ${process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0}`);
+
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY,
+  dangerouslyAllowBrowser: false // Make sure we're not using the API client in the browser
+});
 
 // Helper function to retry API calls with exponential backoff
 async function retryWithBackoff<T>(
@@ -20,6 +27,16 @@ async function retryWithBackoff<T>(
     try {
       return await fn();
     } catch (error: any) {
+      // Log detailed error information
+      console.error("OpenAI API error details:", {
+        error: error.message,
+        status: error.status,
+        code: error.code,
+        type: error.type,
+        param: error.param,
+        stack: error.stack
+      });
+      
       // If it's an insufficient quota error, no need to retry
       if (error.code === 'insufficient_quota' || 
           error.error?.code === 'insufficient_quota' ||
@@ -88,7 +105,7 @@ export async function generateDailyBoost(userInfo: {
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4",  // Changed from gpt-4o which may not be available in all regions
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" }
       })
@@ -160,7 +177,7 @@ export async function chatWithCoach(
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4",  // Changed from gpt-4o which may not be available in all regions
         messages: messages as any,
         temperature: 0.7,
         max_tokens: 500
@@ -200,7 +217,7 @@ export async function analyzeJournalEntry(
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4",  // Changed from gpt-4o which may not be available in all regions
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" }
       })
