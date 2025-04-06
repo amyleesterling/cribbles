@@ -49,7 +49,7 @@ export default function ChatInterface() {
     if (messages.length === 0 && !isLoading && !isTyping) {
       // Simulate AI sending the first message with a slight delay
       setTimeout(() => {
-        sendMessage(initialConversationFlow[0], "assistant");
+        sendMessage(initialConversationFlow[0]);
       }, 1000);
     }
   }, [messages, isLoading, isTyping, sendMessage]);
@@ -86,7 +86,7 @@ export default function ChatInterface() {
         
         // Advance the conversation
         setTimeout(() => {
-          sendMessage(initialConversationFlow[1].replace("you", userName || "you"), "assistant");
+          sendMessage(initialConversationFlow[1].replace("you", userName || "you"));
           setConversationStage(1);
         }, 1000);
       }
@@ -94,7 +94,7 @@ export default function ChatInterface() {
       // Continue the conversation flow based on stage
       else if (conversationStage > 0 && conversationStage < initialConversationFlow.length - 1) {
         setTimeout(() => {
-          sendMessage(initialConversationFlow[conversationStage + 1], "assistant");
+          sendMessage(initialConversationFlow[conversationStage + 1]);
           setConversationStage(conversationStage + 1);
         }, 1500);
       }
@@ -103,7 +103,7 @@ export default function ChatInterface() {
       else if (conversationStage >= initialConversationFlow.length - 1 && messages.length % 4 === 0) {
         const randomQuestion = personalQuestions[Math.floor(Math.random() * personalQuestions.length)];
         setTimeout(() => {
-          sendMessage(randomQuestion, "assistant");
+          sendMessage(randomQuestion);
         }, 1500);
       }
     }

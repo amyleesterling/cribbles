@@ -10,7 +10,7 @@ export default function DataChat() {
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <h1 className="font-display font-bold text-2xl md:text-3xl mb-1">Conversations</h1>
+        <h1 className="font-display font-bold text-2xl md:text-3xl mb-1">Chat</h1>
         <p className="text-gray-500">Talk with your AI companion about your life, thoughts, and dreams</p>
       </motion.div>
       
