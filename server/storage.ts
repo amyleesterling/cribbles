@@ -15,6 +15,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<Omit<User, 'id' | 'createdAt'>>): Promise<User | undefined>;
   
   // Mood operations
   getMoodsByUserId(userId: number): Promise<Mood[]>;
@@ -109,6 +110,15 @@ export class MemStorage implements IStorage {
     const user: User = { ...insertUser, id, createdAt: new Date() };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<Omit<User, 'id' | 'createdAt'>>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser: User = { ...user, ...userData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
   }
   
   // Mood operations
@@ -289,6 +299,15 @@ export class DatabaseStorage implements IStorage {
       .values(insertUser)
       .returning();
     return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<Omit<User, 'id' | 'createdAt'>>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
   
   // Mood operations

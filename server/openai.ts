@@ -99,7 +99,7 @@ export async function generateDailyBoost(userInfo: {
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-3.5-turbo",  // Using gpt-3.5-turbo which is widely available with all OpenAI accounts
+        model: "gpt-4o",  // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" }
       })
@@ -171,7 +171,7 @@ export async function chatWithCoach(
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-3.5-turbo",  // Using gpt-3.5-turbo which is widely available with all OpenAI accounts
+        model: "gpt-4o",  // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: messages as any,
         temperature: 0.7,
         max_tokens: 500
@@ -211,7 +211,7 @@ export async function analyzeJournalEntry(
 
     const response = await retryWithBackoff(() => 
       openai.chat.completions.create({
-        model: "gpt-3.5-turbo",  // Using gpt-3.5-turbo which is widely available with all OpenAI accounts
+        model: "gpt-4o",  // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" }
       })
@@ -225,5 +225,36 @@ export async function analyzeJournalEntry(
       emotionalTone: "balanced",
       recommendations: ["Consider a brief mindfulness practice", "Reflect on what brought you joy today", "Connect with nature for a few minutes"]
     };
+  }
+}
+
+// Generate profile picture based on description
+export async function generateProfilePicture(description: string): Promise<string> {
+  if (!openai) throw new Error("OpenAI API key not configured");
+  
+  const enhancedPrompt = `A profile picture avatar based on this description: ${description}. 
+Style: Friendly, approachable, stylized portrait in a simple, minimal design.
+Clean background, soft colors, warm and inviting. Suitable for a wellness app profile.
+The avatar should be a creative interpretation, not photorealistic.`;
+
+  try {
+    const response = await retryWithBackoff(() => 
+      openai.images.generate({
+        model: "dall-e-3", // Using DALL-E 3 for higher quality
+        prompt: enhancedPrompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard"
+      })
+    );
+    
+    if (!response.data[0].url) {
+      throw new Error("No image URL returned from OpenAI");
+    }
+    
+    return response.data[0].url;
+  } catch (error: any) {
+    console.error("Failed to generate profile picture:", error);
+    throw error;
   }
 }

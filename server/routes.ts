@@ -25,6 +25,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { password, ...userWithoutPassword } = user;
     res.json(userWithoutPassword);
   });
+  
+  app.patch("/api/users/me", async (req, res) => {
+    try {
+      // For demo purposes, use the demo user
+      const user = await storage.getUserByUsername('sophia');
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Define allowed fields to update
+      const schema = z.object({
+        name: z.string().optional(),
+        bio: z.string().optional(),
+        profilePicture: z.string().optional(),
+        role: z.string().optional()
+      });
+      
+      const updateData = schema.parse(req.body);
+      const updatedUser = await storage.updateUser(user.id, updateData);
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update user" });
+      }
+      
+      // Don't send the password
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(400).json({ message: "Invalid user data" });
+    }
+  });
 
   app.post("/api/login", async (req, res) => {
     const schema = z.object({
@@ -410,6 +442,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userId = 1; // Using demo user for now
     const images = await storage.getInspirationImagesByUserId(userId);
     res.json(images);
+  });
+  
+  // Generate profile picture based on description
+  app.post("/api/profile/generate-picture", async (req, res) => {
+    const schema = z.object({
+      description: z.string().min(1)
+    });
+    
+    try {
+      const { description } = schema.parse(req.body);
+      
+      try {
+        // Generate the profile picture
+        const imageUrl = await generateProfilePicture(description);
+        res.json({ imageUrl });
+      } catch (error: any) {
+        console.error("OpenAI profile picture generation error:", error);
+        
+        // Check if it's a quota error
+        if (error?.code === 'insufficient_quota' || 
+            error?.message?.includes("quota") || 
+            error?.message?.includes("exceeded") ||
+            error?.message?.includes("rate limit")) {
+          
+          // Return a more specific error for quota issues
+          return res.status(429).json({ 
+            message: "AI image service is currently unavailable. Please try again later.",
+            errorType: "quota_exceeded"
+          });
+        }
+        
+        // For other errors
+        res.status(500).json({ message: "Could not generate profile picture" });
+      }
+    } catch (error) {
+      console.error("Profile picture validation error:", error);
+      res.status(400).json({ message: "Invalid input for profile picture generation" });
+    }
   });
 
   const httpServer = createServer(app);

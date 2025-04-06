@@ -49,7 +49,7 @@ function Router() {
   if (loading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-softWhite">
-        <div className="text-skyBlue animate-pulse text-2xl font-display">Loading InsightFlow...</div>
+        <div className="text-skyBlue animate-pulse text-2xl font-display">Loading Cribbles...</div>
       </div>
     );
   }
