@@ -88,6 +88,7 @@ export function useChat() {
     isTyping,
     isLoading,
     isError,
+    isQuotaExceeded,
     refetch,
   };
 }

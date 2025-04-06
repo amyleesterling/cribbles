@@ -40,6 +40,7 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
   const [vibe, setVibe] = useState("calm");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
   const [generatedImageData, setGeneratedImageData] = useState<{
     id?: number;
     imageUrl: string;
@@ -76,13 +77,29 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
         title: "Image generated",
         description: "Your inspiration image has been created and saved to your gallery.",
       });
-    } catch (error) {
-      toast({
-        title: "Generation failed",
-        description: "Could not generate the image. Please try again.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
       console.error("Image generation error:", error);
+      
+      // Check if it's a quota exceeded error
+      if (error?.status === 429 || 
+          error?.message?.includes("quota") || 
+          error?.message?.includes("exceeded") ||
+          error?.message?.includes("rate limit")) {
+        
+        setIsQuotaExceeded(true);
+        
+        toast({
+          title: "AI Service Unavailable",
+          description: "Our image generation service is taking a break. Please try again later.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Generation failed",
+          description: "Could not generate the image. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -119,6 +136,17 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
   return (
     <div className="grid md:grid-cols-2 gap-6">
       <div>
+        {isQuotaExceeded && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            <div className="flex items-start">
+              <Sun className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">AI is taking a break</p>
+                <p className="mt-1">Image generation is unavailable at the moment. Please try again later while our AI recharges.</p>
+              </div>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="prompt">Describe what you'd like to visualize</Label>
@@ -128,12 +156,13 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               className="h-32 resize-none"
+              disabled={isQuotaExceeded}
             />
           </div>
           
           <div>
             <Label htmlFor="vibe" className="mb-2 block">Select the vibe for your image</Label>
-            <Select value={vibe} onValueChange={setVibe}>
+            <Select value={vibe} onValueChange={setVibe} disabled={isQuotaExceeded}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a vibe" />
               </SelectTrigger>
@@ -184,7 +213,7 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
           <Button
             type="submit"
             className="w-full bg-skyBlue hover:bg-skyBlue/90 text-white"
-            disabled={isGenerating || !prompt}
+            disabled={isGenerating || !prompt || isQuotaExceeded}
           >
             {isGenerating ? (
               <>
@@ -211,7 +240,7 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
                     setPrompt(samplePrompt);
                     generateImage(samplePrompt);
                   }}
-                  disabled={isGenerating}
+                  disabled={isGenerating || isQuotaExceeded}
                 >
                   {samplePrompt}
                 </Button>
@@ -274,7 +303,7 @@ export default function ImageGenerator({ samplePrompts = [] }: ImageGeneratorPro
                 variant="outline" 
                 size="sm"
                 onClick={() => generateImage()}
-                disabled={isGenerating || !prompt}
+                disabled={isGenerating || !prompt || isQuotaExceeded}
               >
                 <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
               </Button>

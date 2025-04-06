@@ -157,18 +157,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: m.content
       }));
       
-      // Generate response
-      const assistantResponse = await chatWithCoach(userId, content, conversationHistory);
-      
-      // Save assistant response
-      const assistantMessage = await storage.createChatMessage({
-        userId,
-        role: "assistant",
-        content: assistantResponse
-      });
-      
-      res.json(assistantMessage);
+      try {
+        // Generate response
+        const assistantResponse = await chatWithCoach(userId, content, conversationHistory);
+        
+        // Save assistant response
+        const assistantMessage = await storage.createChatMessage({
+          userId,
+          role: "assistant",
+          content: assistantResponse
+        });
+        
+        res.json(assistantMessage);
+      } catch (error: any) {
+        console.error("AI response error:", error);
+        
+        // If it's a quota error, provide a friendly fallback message
+        let fallbackMessage = "I'm having a moment of reflection and need to pause. Let's continue our conversation shortly.";
+        
+        if (error?.code === 'insufficient_quota' || 
+            error?.message?.includes("quota") || 
+            error?.message?.includes("exceeded") ||
+            error?.message?.includes("rate limit")) {
+          fallbackMessage = "I need to recharge for a bit. In the meantime, have you explored the Visual Inspiration page? You might find some beautiful imagery there that resonates with you.";
+        }
+        
+        // Save the fallback AI response
+        const assistantMessage = await storage.createChatMessage({
+          userId,
+          role: "assistant",
+          content: fallbackMessage
+        });
+        
+        // Return the fallback message
+        res.json(assistantMessage);
+      }
     } catch (error) {
+      console.error("Chat error:", error);
       res.status(400).json({ message: "Invalid request" });
     }
   });
@@ -276,22 +301,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { prompt, vibe, isDaily } = schema.parse(req.body);
       const userId = 1; // Using demo user for now
       
-      // Generate the image
-      const imageUrl = await generateInspirationImage(prompt);
-      
-      // Save to database
-      const savedImage = await storage.saveInspirationImage({
-        userId,
-        prompt,
-        imageUrl,
-        vibe: vibe || "calm",
-        isDaily: isDaily || false
-      });
-      
-      res.json(savedImage);
+      try {
+        // Generate the image
+        const imageUrl = await generateInspirationImage(prompt);
+        
+        // Save to database
+        const savedImage = await storage.saveInspirationImage({
+          userId,
+          prompt,
+          imageUrl,
+          vibe: vibe || "calm",
+          isDaily: isDaily || false
+        });
+        
+        res.json(savedImage);
+      } catch (error: any) {
+        console.error("OpenAI image generation error:", error);
+        
+        // Check if it's a quota error
+        if (error?.code === 'insufficient_quota' || 
+            error?.message?.includes("quota") || 
+            error?.message?.includes("exceeded") ||
+            error?.message?.includes("rate limit")) {
+          
+          // Return a more specific error for quota issues
+          return res.status(429).json({ 
+            message: "AI image service is currently unavailable. Please try again later.",
+            errorType: "quota_exceeded"
+          });
+        }
+        
+        // For other errors
+        res.status(500).json({ message: "Could not generate inspiration image" });
+      }
     } catch (error) {
-      console.error("Inspiration image error:", error);
-      res.status(400).json({ message: "Could not generate inspiration image" });
+      console.error("Inspiration image validation error:", error);
+      res.status(400).json({ message: "Invalid input for image generation" });
     }
   });
   
@@ -313,20 +358,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ];
         const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
         
-        // Generate the image
-        const imageUrl = await generateInspirationImage(randomPrompt);
-        
-        // Save to database
-        dailyImage = await storage.saveInspirationImage({
-          userId,
-          prompt: randomPrompt,
-          imageUrl,
-          vibe: "calm",
-          isDaily: true
-        });
+        try {
+          // Generate the image
+          const imageUrl = await generateInspirationImage(randomPrompt);
+          
+          // Save to database
+          dailyImage = await storage.saveInspirationImage({
+            userId,
+            prompt: randomPrompt,
+            imageUrl,
+            vibe: "calm",
+            isDaily: true
+          });
+        } catch (error: any) {
+          console.error("Daily OpenAI image generation error:", error);
+          
+          // If it's a quota error
+          if (error?.code === 'insufficient_quota' || 
+              error?.message?.includes("quota") || 
+              error?.message?.includes("exceeded") ||
+              error?.message?.includes("rate limit")) {
+            
+            // For daily images, try to use a previous one as a fallback
+            const previousImages = await storage.getInspirationImagesByUserId(userId);
+            if (previousImages.length > 0) {
+              // Return the most recent image that exists
+              dailyImage = previousImages[0];
+            } else {
+              // If there's no previous image either, return an error
+              return res.status(429).json({ 
+                message: "AI image service is currently unavailable. Please try again later.",
+                errorType: "quota_exceeded"
+              });
+            }
+          } else {
+            // For non-quota errors
+            return res.status(500).json({ message: "Could not generate daily inspiration image" });
+          }
+        }
       } catch (error) {
         console.error("Daily inspiration image error:", error);
-        return res.status(500).json({ message: "Could not generate daily inspiration image" });
+        return res.status(500).json({ message: "Could not retrieve daily inspiration image" });
       }
     }
     

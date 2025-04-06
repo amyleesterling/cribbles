@@ -6,6 +6,8 @@ import MotionDot from "@/components/ui/motion-dot";
 import ImageGenerator from "@/components/inspiration/image-generator";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
+import welcomeBannerPath from "@assets/welcome to cribbles.png";
 
 // Placeholder quotes for inspiration
 const inspirationQuotes = [
@@ -54,6 +56,20 @@ export default function VisualInspiration() {
         <h1 className="font-display font-bold text-2xl md:text-3xl mb-1 text-darkGray">Visual Inspiration</h1>
         <p className="text-vibrantPink">Generate visual inspiration for your creative journey</p>
       </div>
+      
+      {/* Welcome Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-6 rounded-xl overflow-hidden shadow-md"
+      >
+        <img 
+          src={welcomeBannerPath} 
+          alt="Welcome to Cribbles" 
+          className="w-full h-auto object-cover max-h-64"
+        />
+      </motion.div>
       
       <Tabs defaultValue="generator" className="mb-6">
         <div className="flex justify-between items-center mb-4">

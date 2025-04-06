@@ -37,7 +37,7 @@ export default function ChatInterface() {
   const [userName, setUserName] = useState("");
   const [conversationStage, setConversationStage] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages, sendMessage, isTyping, isLoading } = useChat();
+  const { messages, sendMessage, isTyping, isLoading, isQuotaExceeded } = useChat();
   
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -192,7 +192,18 @@ export default function ChatInterface() {
         )}
       </CardContent>
       
-      <CardFooter className="p-4 border-t border-gray-200/30">
+      <CardFooter className="p-4 border-t border-gray-200/30 flex flex-col">
+        {isQuotaExceeded && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+            <div className="flex items-start">
+              <Sun className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">AI is taking a break</p>
+                <p className="mt-1">I'm resting for a moment. Try our Visual Inspiration page for beautiful AI-generated imagery while I recharge.</p>
+              </div>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="flex items-center w-full">
           <Input
             type="text"
@@ -200,13 +211,13 @@ export default function ChatInterface() {
             className="flex-1 py-2 px-4 bg-gray-50 rounded-full focus:outline-none focus:ring-2 focus:ring-skyBlue"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            disabled={isTyping || messages.length === 0}
+            disabled={isTyping || messages.length === 0 || isQuotaExceeded}
           />
           <Button 
             type="submit" 
             size="icon" 
             className="ml-2 p-2 bg-skyBlue text-white rounded-full hover:bg-skyBlue/90"
-            disabled={isTyping || !inputMessage.trim() || messages.length === 0}
+            disabled={isTyping || !inputMessage.trim() || messages.length === 0 || isQuotaExceeded}
           >
             <Send className="h-5 w-5" />
           </Button>
