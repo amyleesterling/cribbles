@@ -4,7 +4,8 @@ import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { MessageCircle, Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import welcomeImage from "../../assets/welcome-cribbles.png";
+// Let's try with a hardcoded URL to ensure the image loads
+const welcomeImage = "/static/welcome-cribbles.png";
 
 export default function WelcomeScreen() {
   const [isVisible, setIsVisible] = useState(true);
