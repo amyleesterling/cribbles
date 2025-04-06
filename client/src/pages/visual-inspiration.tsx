@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Grid2X2, List } from "lucide-react";
+import { Grid2X2, List, Sparkles } from "lucide-react";
 import MotionDot from "@/components/ui/motion-dot";
 import ImageGenerator from "@/components/inspiration/image-generator";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Placeholder quotes for inspiration
 const inspirationQuotes = [
