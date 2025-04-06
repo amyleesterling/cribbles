@@ -168,22 +168,12 @@ export default function Profile() {
               <form onSubmit={handleSubmit}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name">First Name</Label>
                     <Input 
                       id="name" 
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       required
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="role">Role/Occupation</Label>
-                    <Input 
-                      id="role" 
-                      value={formData.role}
-                      onChange={(e) => setFormData({...formData, role: e.target.value})}
-                      placeholder="e.g. Creative Designer, Student, Writer"
                     />
                   </div>
                   
@@ -235,7 +225,7 @@ export default function Profile() {
                   </div>
                   <div>
                     <h2 className="text-xl font-medium">{user?.name}</h2>
-                    <p className="text-gray-500">{user?.role || "Wellness Explorer"}</p>
+                    <p className="text-gray-500">Wellness Explorer</p>
                   </div>
                 </div>
                 

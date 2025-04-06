@@ -115,7 +115,7 @@ export async function generateInspirationImage(prompt: string): Promise<string> 
     );
 
     return response.data[0].url || "";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating inspiration image:", error);
     throw new Error("Could not generate inspiration image");
   }
