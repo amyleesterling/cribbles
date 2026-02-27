@@ -565,9 +565,16 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
   
+  // My gallery (current user's images)
   app.get("/api/inspiration", async (req, res) => {
     const userId = 1; // Using demo user for now
     const images = await storage.getInspirationImagesByUserId(userId);
+    res.json(images);
+  });
+
+  // Community gallery (all users' images)
+  app.get("/api/inspiration/all", async (req, res) => {
+    const images = await storage.getAllInspirationImages();
     res.json(images);
   });
 

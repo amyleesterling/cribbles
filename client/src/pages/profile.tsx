@@ -9,7 +9,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import MotionDot from "@/components/ui/motion-dot";
+import { ImageIcon } from "lucide-react";
 import { type User, type UserPreferences } from "@shared/schema";
+
+type InspirationImage = {
+  id: number;
+  prompt: string;
+  imageUrl: string;
+  createdAt: string;
+};
 
 // Sample wellnessGoals
 const wellnessGoals = [
@@ -53,6 +61,7 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     name: "",
     bio: "",
+    phone: "",
     notificationTime: "08:00",
     eveningBoostEnabled: false,
     eveningBoostTime: "19:00",
@@ -65,7 +74,8 @@ export default function Profile() {
     if (user && preferences) {
       setFormData({
         name: user.name,
-        bio: "",
+        bio: user.bio || "",
+        phone: (user as any).phone || "",
         notificationTime: preferences.preferences.notificationTime || "08:00",
         eveningBoostEnabled: preferences.preferences.eveningBoostEnabled || false,
         eveningBoostTime: preferences.preferences.eveningBoostTime || "19:00",
@@ -104,8 +114,10 @@ export default function Profile() {
     }
   });
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Save phone + name to user profile
+    await apiRequest("PATCH", "/api/users/me", { name: formData.name, bio: formData.bio, phone: formData.phone });
     updatePreferences.mutate(formData);
   };
   
@@ -183,15 +195,27 @@ export default function Profile() {
                   
                   <div className="grid gap-2">
                     <Label htmlFor="bio">Short Bio</Label>
-                    <Textarea 
-                      id="bio" 
+                    <Textarea
+                      id="bio"
                       value={formData.bio}
                       onChange={(e) => setFormData({...formData, bio: e.target.value})}
                       placeholder="Tell us a bit about yourself..."
                       rows={3}
                     />
                   </div>
-                  
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="phone">Phone Number <span className="text-gray-400 font-normal text-xs">(for SMS check-ins)</span></Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      placeholder="+1 (555) 000-0000"
+                    />
+                    <p className="text-xs text-gray-400">Saved here so it auto-fills when you set up SMS notifications.</p>
+                  </div>
+
                   <div className="grid gap-2">
                     <Label htmlFor="notificationTime">Daily Boost Notification Time</Label>
                     <Input 
@@ -274,6 +298,11 @@ export default function Profile() {
                     <p>{new Date(user?.createdAt || "").toLocaleDateString()}</p>
                   </div>
                   
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Phone Number</h3>
+                    <p>{(user as any)?.phone || <span className="text-gray-400 text-sm">Not set</span>}</p>
+                  </div>
+
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Daily Boost Time</h3>
                     <p>{preferences?.preferences.notificationTime || "08:00 AM"}</p>
@@ -380,7 +409,54 @@ export default function Profile() {
             )}
           </CardContent>
         </Card>
+
+        {/* My Zen Gallery */}
+        <Card className="bg-white rounded-2xl shadow-sm border-gray-200/30">
+          <CardHeader className="pb-2 pt-6 px-6">
+            <div className="flex items-center">
+              <MotionDot />
+              <CardTitle className="font-display font-semibold text-xl ml-2">My Zen Gallery</CardTitle>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">Images you've generated in the Wellness Library</p>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <MyGallery />
+          </CardContent>
+        </Card>
       </div>
+    </div>
+  );
+}
+
+function MyGallery() {
+  const { data: images = [], isLoading } = useQuery<InspirationImage[]>({
+    queryKey: ["/api/inspiration"],
+    queryFn: () => fetch("/api/inspiration").then(r => r.json()),
+  });
+
+  if (isLoading) {
+    return <div className="text-sm text-gray-400">Loading your images…</div>;
+  }
+
+  if (images.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <ImageIcon className="h-10 w-10 text-gray-200 mx-auto mb-2" />
+        <p className="text-gray-400 text-sm">No images yet — head to the Wellness Library to generate your first!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {images.map(img => (
+        <div key={img.id} className="group relative aspect-square rounded-xl overflow-hidden">
+          <img src={img.imageUrl} alt={img.prompt} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+            <p className="text-white text-xs line-clamp-2">{img.prompt}</p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

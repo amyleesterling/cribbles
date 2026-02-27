@@ -14,6 +14,32 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SUBS_FILE = path.join(__dirname, "data", "subscriptions.json");
+const IMAGES_FILE = path.join(__dirname, "data", "images.json");
+
+function loadImagesFromFile(): Map<number, InspirationImage> {
+  try {
+    if (!fs.existsSync(IMAGES_FILE)) return new Map();
+    const raw = fs.readFileSync(IMAGES_FILE, "utf-8");
+    const arr: InspirationImage[] = JSON.parse(raw);
+    const map = new Map<number, InspirationImage>();
+    for (const img of arr) {
+      map.set(img.id, { ...img, createdAt: new Date(img.createdAt) });
+    }
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+function saveImagesToFile(images: Map<number, InspirationImage>) {
+  try {
+    const dir = path.dirname(IMAGES_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(IMAGES_FILE, JSON.stringify(Array.from(images.values()), null, 2), "utf-8");
+  } catch (e) {
+    console.error("Failed to persist images:", e);
+  }
+}
 
 function loadSubscriptionsFromFile(): Map<number, Subscription> {
   try {
@@ -73,6 +99,7 @@ export interface IStorage {
   updateUserPreferences(userId: number, preferences: Partial<InsertUserPreferences['preferences']>): Promise<UserPreferences | undefined>;
   
   // Inspiration images operations
+  getAllInspirationImages(): Promise<InspirationImage[]>;
   getInspirationImagesByUserId(userId: number): Promise<InspirationImage[]>;
   getDailyInspirationImage(userId: number): Promise<InspirationImage | undefined>;
   saveInspirationImage(image: InsertInspirationImage): Promise<InspirationImage>;
@@ -110,21 +137,19 @@ export class MemStorage implements IStorage {
     this.chatMessages = new Map();
     this.dailyBoosts = new Map();
     this.userPreferences = new Map();
-    this.inspirationImages = new Map();
+    this.inspirationImages = loadImagesFromFile();
     this.subscriptions = loadSubscriptionsFromFile();
-    // Ensure next ID is after any loaded IDs
-    if (this.subscriptions.size > 0) {
-      this.currentSubscriptionId = Math.max(...Array.from(this.subscriptions.keys())) + 1;
-    }
-    
+
     this.currentUserId = 1;
     this.currentMoodId = 1;
     this.currentJournalId = 1;
     this.currentChatMessageId = 1;
     this.currentDailyBoostId = 1;
     this.currentUserPreferencesId = 1;
-    this.currentInspirationImageId = 1;
-    this.currentSubscriptionId = 1;
+    this.currentInspirationImageId = this.inspirationImages.size > 0
+      ? Math.max(...Array.from(this.inspirationImages.keys())) + 1 : 1;
+    this.currentSubscriptionId = this.subscriptions.size > 0
+      ? Math.max(...Array.from(this.subscriptions.keys())) + 1 : 1;
     
     // Adding a demo user
     const demoUser: User = {
@@ -297,6 +322,11 @@ export class MemStorage implements IStorage {
   }
   
   // Inspiration images operations
+  async getAllInspirationImages(): Promise<InspirationImage[]> {
+    return Array.from(this.inspirationImages.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
   async getInspirationImagesByUserId(userId: number): Promise<InspirationImage[]> {
     return Array.from(this.inspirationImages.values())
       .filter((image) => image.userId === userId)
@@ -321,6 +351,7 @@ export class MemStorage implements IStorage {
     const id = this.currentInspirationImageId++;
     const image: InspirationImage = { ...insertImage, id, createdAt: new Date() };
     this.inspirationImages.set(id, image);
+    saveImagesToFile(this.inspirationImages);
     return image;
   }
 
