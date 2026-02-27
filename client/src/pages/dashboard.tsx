@@ -25,7 +25,6 @@ export default function Dashboard() {
   });
   const [greeting, setGreeting] = useState("");
   const [dailyQuote, setDailyQuote] = useState(dailyQuotes[0]);
-  const [companionName, setCompanionName] = useState("Cribbles");
   
   useEffect(() => {
     // Set time-based greeting
@@ -72,7 +71,7 @@ export default function Dashboard() {
             <h1 className="font-display font-bold text-2xl md:text-3xl mb-1">
               {greeting}, {user?.name?.split(' ')[0] || 'there'}!
             </h1>
-            <p className="text-gray-600">I'm {companionName}, your companion for Cribbles.</p>
+            <p className="text-gray-600">Your personal wellness companion is ready for you.</p>
           </div>
         </div>
         <motion.p 

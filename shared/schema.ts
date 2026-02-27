@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   role: text("role"),
   bio: text("bio"),
+  phone: text("phone"),
   profilePicture: text("profile_picture"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -69,6 +70,15 @@ export const inspirationImages = pgTable("inspiration_images", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  channel: text("channel").notNull(), // email | sms | push
+  contact: text("contact").notNull(), // email address, phone, or "browser"
+  time: text("time").notNull(), // e.g. "8:00 AM"
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertMoodSchema = createInsertSchema(moods).omit({ id: true });
@@ -77,6 +87,7 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ i
 export const insertDailyBoostSchema = createInsertSchema(dailyBoosts).omit({ id: true, createdAt: true, seenAt: true });
 export const insertUserPreferencesSchema = createInsertSchema(userPreferences).omit({ id: true });
 export const insertInspirationImageSchema = createInsertSchema(inspirationImages).omit({ id: true, createdAt: true });
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true });
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -86,6 +97,7 @@ export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertDailyBoost = z.infer<typeof insertDailyBoostSchema>;
 export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
 export type InsertInspirationImage = z.infer<typeof insertInspirationImageSchema>;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 
 // Define relations
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -146,3 +158,4 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type DailyBoost = typeof dailyBoosts.$inferSelect;
 export type UserPreferences = typeof userPreferences.$inferSelect;
 export type InspirationImage = typeof inspirationImages.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;

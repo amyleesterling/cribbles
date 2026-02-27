@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import MotionDot from "../ui/motion-dot";
-import { Home, MessageCircle, ImageIcon, FileText, Menu } from "lucide-react";
+import { Home, MessageCircle, Images, BookOpen } from "lucide-react";
 
 type MobileNavProps = {
   currentPath: string;
@@ -18,11 +18,11 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
           <h1 className="font-display font-bold text-xl text-darkGray">Cribbles</h1>
         </div>
       </nav>
-      
+
       {/* Bottom Navigation - Mobile Only */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-skyBlue/20 p-2 flex justify-around items-center z-10">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className={`flex flex-col items-center p-2 ${
             currentPath === "/" ? "text-skyBlue font-medium" : "text-darkGray/60 hover:text-darkGray"
           }`}
@@ -30,9 +30,9 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
           <Home className="h-5 w-5" />
           <span className="text-xs mt-1">Home</span>
         </Link>
-        
-        <Link 
-          href="/data-chat" 
+
+        <Link
+          href="/data-chat"
           className={`flex flex-col items-center p-2 ${
             currentPath === "/data-chat" ? "text-vibrantPink font-medium" : "text-darkGray/60 hover:text-darkGray"
           }`}
@@ -40,25 +40,25 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
           <MessageCircle className="h-5 w-5" />
           <span className="text-xs mt-1">Chat</span>
         </Link>
-        
-        <Link 
-          href="/visual-inspiration" 
+
+        <Link
+          href="/wonder-library"
           className={`flex flex-col items-center p-2 ${
-            currentPath === "/visual-inspiration" ? "text-goldenYellow font-medium" : "text-darkGray/60 hover:text-darkGray"
+            currentPath === "/wonder-library" ? "text-goldenYellow font-medium" : "text-darkGray/60 hover:text-darkGray"
           }`}
         >
-          <ImageIcon className="h-5 w-5" />
-          <span className="text-xs mt-1">Inspire</span>
+          <Images className="h-5 w-5" />
+          <span className="text-xs mt-1">Gallery</span>
         </Link>
-        
-        <Link 
-          href="/resources" 
+
+        <Link
+          href="/wellness-library"
           className={`flex flex-col items-center p-2 ${
-            currentPath === "/resources" ? "text-skyBlue font-medium" : "text-darkGray/60 hover:text-darkGray"
+            currentPath === "/wellness-library" ? "text-skyBlue font-medium" : "text-darkGray/60 hover:text-darkGray"
           }`}
         >
-          <FileText className="h-5 w-5" />
-          <span className="text-xs mt-1">Library</span>
+          <BookOpen className="h-5 w-5" />
+          <span className="text-xs mt-1">Wellness</span>
         </Link>
       </nav>
     </>

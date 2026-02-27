@@ -1,99 +1,60 @@
-import { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
-import { Toaster } from "@/components/ui/toaster";
-import { useToast } from "@/hooks/use-toast";
-
-import Sidebar from "./components/layout/sidebar";
-import MobileNav from "./components/layout/mobile-nav";
-import WelcomeScreen from "./components/welcome/welcome-screen";
-
-// Pages
-import Dashboard from "@/pages/dashboard";
-import DataChat from "@/pages/data-chat";
-import VisualInspiration from "@/pages/visual-inspiration";
-import Resources from "@/pages/resources";
-import Profile from "@/pages/profile";
-import NotFound from "@/pages/not-found";
 import { type User } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+import Sidebar from "@/components/layout/sidebar";
+import MobileNav from "@/components/layout/mobile-nav";
+import Dashboard from "@/pages/dashboard";
+import Journal from "@/pages/journal";
+import Mood from "@/pages/mood";
+import DataChat from "@/pages/data-chat";
+import Insights from "@/pages/insights";
+import Profile from "@/pages/profile";
+import Resources from "@/pages/resources";
+import VisualInspiration from "@/pages/visual-inspiration";
+import WonderLibrary from "@/pages/wonder-library";
+import WellnessLibrary from "@/pages/wellness-library";
+import Subscribe from "@/pages/subscribe";
+import NotFound from "@/pages/not-found";
 
-function Router() {
-  const [user, setUser] = useState<Omit<User, "password"> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const response = await fetch("/api/users/me");
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        }
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load user data. Please refresh the page.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUser();
-  }, [toast]);
-
-  if (loading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-softWhite">
-        <div className="text-skyBlue animate-pulse text-2xl font-display">Loading Cribbles...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-softWhite">
-        <div className="text-skyBlue text-2xl font-display">Please log in</div>
-      </div>
-    );
-  }
+  const { data: user } = useQuery<Omit<User, "password">>({
+    queryKey: ["/api/users/me"],
+  });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-softWhite">
-      {/* Welcome Screen */}
-      <WelcomeScreen />
-      
-      {/* Sidebar - Desktop only */}
-      <Sidebar user={user} currentPath={location} />
-      
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto bg-softWhite pb-16 lg:pb-0">
-        <Switch>
-          <Route path="/" component={Dashboard} />
-          <Route path="/data-chat" component={DataChat} />
-          <Route path="/visual-inspiration" component={VisualInspiration} />
-          <Route path="/resources" component={Resources} />
-          <Route path="/profile" component={Profile} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      
-      {/* Mobile Navigation */}
-      <MobileNav currentPath={location} />
+    <div className="flex h-screen overflow-hidden">
+      {user && <Sidebar user={user} currentPath={location} />}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {user && <MobileNav currentPath={location} />}
+        <main className="flex-1 overflow-y-auto bg-[#FFF9F9]">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
-    </QueryClientProvider>
+    <Layout>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/journal" component={Journal} />
+        <Route path="/mood" component={Mood} />
+        <Route path="/chat" component={DataChat} />
+        <Route path="/data-chat" component={DataChat} />
+        <Route path="/insights" component={Insights} />
+        <Route path="/profile" component={Profile} />
+        <Route path="/resources" component={Resources} />
+        <Route path="/inspiration" component={VisualInspiration} />
+        <Route path="/visual-inspiration" component={VisualInspiration} />
+        <Route path="/wonder-library" component={WonderLibrary} />
+        <Route path="/wellness-library" component={WellnessLibrary} />
+        <Route path="/subscribe" component={Subscribe} />
+        <Route component={NotFound} />
+      </Switch>
+    </Layout>
   );
 }
 

@@ -1,18 +1,24 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { generateDailyBoost, chatWithCoach, generateInspirationImage, analyzeJournalEntry } from "./openai";
-import { 
-  insertUserSchema, 
-  insertMoodSchema, 
-  insertJournalSchema, 
-  insertChatMessageSchema, 
+import { generateDailyBoost, chatWithCoach, generateInspirationImage, analyzeJournalEntry, generateProfilePicture } from "./openai";
+import { sendDailyCheckinEmail } from "./email";
+import {
+  insertUserSchema,
+  insertMoodSchema,
+  insertJournalSchema,
+  insertChatMessageSchema,
   insertUserPreferencesSchema,
   insertInspirationImageSchema
-} from "@shared/schema";
+} from "../shared/schema";
 import { z } from "zod";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<void> {
+  // Test endpoint
+  app.get("/api/test", (req, res) => {
+    res.json({ message: "Server is working!" });
+  });
+
   // User APIs
   app.get("/api/users/me", async (req, res) => {
     // For demo purposes, always return the demo user
@@ -38,6 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schema = z.object({
         name: z.string().optional(),
         bio: z.string().optional(),
+        phone: z.string().optional(),
         profilePicture: z.string().optional(),
         role: z.string().optional()
       });
@@ -480,6 +487,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Profile picture validation error:", error);
       res.status(400).json({ message: "Invalid input for profile picture generation" });
     }
+  });
+
+  // Subscription APIs
+  app.get("/api/subscriptions/me", async (req, res) => {
+    const userId = 1;
+    const sub = await storage.getSubscriptionByUserId(userId);
+    res.json(sub || null);
+  });
+
+  app.post("/api/subscriptions", async (req, res) => {
+    const schema = z.object({
+      channel: z.enum(["email", "sms", "push"]),
+      contact: z.string().min(1),
+      time: z.string().min(1),
+    });
+    try {
+      const data = schema.parse(req.body);
+      const userId = 1;
+      const sub = await storage.createSubscription({ userId, ...data });
+      res.status(201).json(sub);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid subscription data" });
+    }
+  });
+
+  app.delete("/api/subscriptions/me", async (req, res) => {
+    const userId = 1;
+    await storage.deleteSubscriptionByUserId(userId);
+    res.json({ success: true });
+  });
+
+  // Send a test email immediately (useful for verifying Resend setup)
+  app.post("/api/subscriptions/test-send", async (req, res) => {
+    const userId = 1;
+    const sub = await storage.getSubscriptionByUserId(userId);
+    if (!sub || sub.channel !== "email") {
+      return res.status(400).json({ message: "No email subscription found. Subscribe with email first." });
+    }
+    const user = await storage.getUser(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    try {
+      await sendDailyCheckinEmail({ to: sub.contact, name: user.name });
+      res.json({ success: true, sentTo: sub.contact });
+    } catch (err: any) {
+      console.error("Test send error:", err);
+      res.status(500).json({ message: err?.message || "Failed to send email" });
+    }
+  });
+
+  // Inspiration Image APIs
+  app.post("/api/inspiration/generate", async (req, res) => {
+    const schema = z.object({
+      prompt: z.string().min(1)
+    });
+    
+    try {
+      const { prompt } = schema.parse(req.body);
+      const userId = 1; // Using demo user for now
+      
+      const imageUrl = await generateInspirationImage(prompt);
+      
+      // Save the generated image
+      const savedImage = await storage.saveInspirationImage({
+        userId,
+        prompt,
+        imageUrl,
+        vibe: "calm",
+        isDaily: false
+      });
+      
+      res.json(savedImage);
+    } catch (error) {
+      console.error("Error generating inspiration image:", error);
+      res.status(400).json({ message: "Could not generate inspiration image" });
+    }
+  });
+  
+  app.get("/api/inspiration", async (req, res) => {
+    const userId = 1; // Using demo user for now
+    const images = await storage.getInspirationImagesByUserId(userId);
+    res.json(images);
   });
 
   const httpServer = createServer(app);

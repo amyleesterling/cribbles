@@ -1,14 +1,44 @@
-import { 
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import {
   users, type User, type InsertUser,
   moods, type Mood, type InsertMood,
   journals, type Journal, type InsertJournal,
   chatMessages, type ChatMessage, type InsertChatMessage,
   dailyBoosts, type DailyBoost, type InsertDailyBoost,
   userPreferences, type UserPreferences, type InsertUserPreferences,
-  inspirationImages, type InspirationImage, type InsertInspirationImage
-} from "@shared/schema";
-import { db } from "./db";
-import { eq, and, desc, sql } from "drizzle-orm";
+  inspirationImages, type InspirationImage, type InsertInspirationImage,
+  type Subscription, type InsertSubscription
+} from "../shared/schema";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SUBS_FILE = path.join(__dirname, "data", "subscriptions.json");
+
+function loadSubscriptionsFromFile(): Map<number, Subscription> {
+  try {
+    if (!fs.existsSync(SUBS_FILE)) return new Map();
+    const raw = fs.readFileSync(SUBS_FILE, "utf-8");
+    const arr: Subscription[] = JSON.parse(raw);
+    const map = new Map<number, Subscription>();
+    for (const s of arr) {
+      map.set(s.id, { ...s, createdAt: new Date(s.createdAt) });
+    }
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+function saveSubscriptionsToFile(subs: Map<number, Subscription>) {
+  try {
+    const dir = path.dirname(SUBS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(SUBS_FILE, JSON.stringify(Array.from(subs.values()), null, 2), "utf-8");
+  } catch (e) {
+    console.error("Failed to persist subscriptions:", e);
+  }
+}
 
 export interface IStorage {
   // User operations
@@ -46,6 +76,12 @@ export interface IStorage {
   getInspirationImagesByUserId(userId: number): Promise<InspirationImage[]>;
   getDailyInspirationImage(userId: number): Promise<InspirationImage | undefined>;
   saveInspirationImage(image: InsertInspirationImage): Promise<InspirationImage>;
+
+  // Subscription operations
+  getAllSubscriptions(): Promise<Subscription[]>;
+  getSubscriptionByUserId(userId: number): Promise<Subscription | undefined>;
+  createSubscription(sub: InsertSubscription): Promise<Subscription>;
+  deleteSubscriptionByUserId(userId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -56,7 +92,8 @@ export class MemStorage implements IStorage {
   private dailyBoosts: Map<number, DailyBoost>;
   private userPreferences: Map<number, UserPreferences>;
   private inspirationImages: Map<number, InspirationImage>;
-  
+  private subscriptions: Map<number, Subscription>;
+
   private currentUserId: number;
   private currentMoodId: number;
   private currentJournalId: number;
@@ -64,6 +101,7 @@ export class MemStorage implements IStorage {
   private currentDailyBoostId: number;
   private currentUserPreferencesId: number;
   private currentInspirationImageId: number;
+  private currentSubscriptionId: number;
 
   constructor() {
     this.users = new Map();
@@ -73,6 +111,11 @@ export class MemStorage implements IStorage {
     this.dailyBoosts = new Map();
     this.userPreferences = new Map();
     this.inspirationImages = new Map();
+    this.subscriptions = loadSubscriptionsFromFile();
+    // Ensure next ID is after any loaded IDs
+    if (this.subscriptions.size > 0) {
+      this.currentSubscriptionId = Math.max(...Array.from(this.subscriptions.keys())) + 1;
+    }
     
     this.currentUserId = 1;
     this.currentMoodId = 1;
@@ -81,6 +124,7 @@ export class MemStorage implements IStorage {
     this.currentDailyBoostId = 1;
     this.currentUserPreferencesId = 1;
     this.currentInspirationImageId = 1;
+    this.currentSubscriptionId = 1;
     
     // Adding a demo user
     const demoUser: User = {
@@ -279,9 +323,39 @@ export class MemStorage implements IStorage {
     this.inspirationImages.set(id, image);
     return image;
   }
+
+  // Subscription operations
+  async getAllSubscriptions(): Promise<Subscription[]> {
+    return Array.from(this.subscriptions.values());
+  }
+
+  async getSubscriptionByUserId(userId: number): Promise<Subscription | undefined> {
+    return Array.from(this.subscriptions.values()).find(s => s.userId === userId);
+  }
+
+  async createSubscription(insertSub: InsertSubscription): Promise<Subscription> {
+    // Delete existing subscription for user first (one per user)
+    const existing = await this.getSubscriptionByUserId(insertSub.userId);
+    if (existing) this.subscriptions.delete(existing.id);
+
+    const id = this.currentSubscriptionId++;
+    const sub: Subscription = { ...insertSub, id, createdAt: new Date() };
+    this.subscriptions.set(id, sub);
+    saveSubscriptionsToFile(this.subscriptions);
+    return sub;
+  }
+
+  async deleteSubscriptionByUserId(userId: number): Promise<void> {
+    const existing = await this.getSubscriptionByUserId(userId);
+    if (existing) {
+      this.subscriptions.delete(existing.id);
+      saveSubscriptionsToFile(this.subscriptions);
+    }
+  }
 }
 
-export class DatabaseStorage implements IStorage {
+/* DatabaseStorage removed — using MemStorage (no DB required to run locally) */
+class _DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -516,5 +590,4 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Initialize database storage for Cribbles app
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
