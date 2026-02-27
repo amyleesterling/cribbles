@@ -11,7 +11,7 @@ import { type ChatMessage } from "@shared/schema";
 
 // Conversation starters - these create a more natural flow
 const initialConversationFlow = [
-  "Hi there! I'm Cribbles, your friend for zenful joy. What's your name?",
+  "Hi there! I'm Mira, your 650 Method wellness guide. What's your name?",
   "It's wonderful to meet you! How are you feeling today?",
   "I'd love to get to know you better. What brings you joy in life?",
   "That's beautiful. What's something you're curious about or would like to explore in our conversations?",
@@ -33,7 +33,7 @@ const personalQuestions = [
 
 export default function ChatInterface() {
   const [inputMessage, setInputMessage] = useState("");
-  const [companionName, setCompanionName] = useState("Cribbles");
+  const [companionName, setCompanionName] = useState("Mira");
   const [userName, setUserName] = useState("");
   const [conversationStage, setConversationStage] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -135,7 +135,7 @@ export default function ChatInterface() {
           </div>
           <div className="ml-3">
             <CardTitle className="font-display font-semibold text-xl">{companionName}</CardTitle>
-            <p className="text-xs text-gray-500">Your friend for zenful joy</p>
+            <p className="text-xs text-gray-500">Your 650 Method wellness guide</p>
           </div>
         </div>
         <Button variant="ghost" size="icon">

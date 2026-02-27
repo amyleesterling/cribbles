@@ -8,7 +8,7 @@ import welcomeImage from "@assets/welcome to cribbles.png";
 
 export default function WelcomeScreen() {
   const [isVisible, setIsVisible] = useState(true);
-  
+
   // Hide welcome screen after 3 days
   useEffect(() => {
     const lastShown = localStorage.getItem("welcomeScreenLastShown");
@@ -21,9 +21,9 @@ export default function WelcomeScreen() {
     }
     localStorage.setItem("welcomeScreenLastShown", Date.now().toString());
   }, []);
-  
+
   if (!isVisible) return null;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -33,16 +33,16 @@ export default function WelcomeScreen() {
     >
       <Card className="max-w-lg w-full bg-white rounded-xl shadow-xl overflow-hidden border-0">
         <div className="relative">
-          <img 
-            src={welcomeImage} 
-            alt="Welcome to Cribbles" 
+          <img
+            src={welcomeImage}
+            alt="Mira Solis | The 650 Method"
             className="w-full object-cover"
           />
-          
+
           <div className="absolute top-4 right-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="text-white hover:bg-white/20 backdrop-blur-sm"
               onClick={() => setIsVisible(false)}
             >
@@ -50,14 +50,15 @@ export default function WelcomeScreen() {
             </Button>
           </div>
         </div>
-        
+
         <div className="p-6 text-center">
-          <h2 className="text-2xl font-display font-bold mb-2 text-darkGray">Your Friend for Zenful Joy</h2>
+          <h2 className="text-2xl font-display font-bold mb-1 text-darkGray">Mira Solis</h2>
+          <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-3">The 650 Method</p>
           <p className="text-darkGray/70 mb-6">
-            Cribbles is your personal companion who will chat with you, learn about your life,
-            and provide beautiful imagery and wisdom to inspire wonder and joy.
+            Your AI wellness companion — powered by the 650 Method. Chat with Mira, track your journey,
+            and discover beautiful imagery and wisdom to inspire your best self.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/data-chat">
               <Button className="w-full sm:w-auto cribbles-button-primary">
@@ -69,8 +70,8 @@ export default function WelcomeScreen() {
                 <Sparkles className="mr-2 h-4 w-4" /> Inspire Me
               </Button>
             </Link>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full sm:w-auto mt-2 sm:mt-0 border-vibrantPink text-vibrantPink hover:bg-vibrantPink/10"
               onClick={() => setIsVisible(false)}
             >

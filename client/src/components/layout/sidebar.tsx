@@ -3,12 +3,15 @@ import MotionDot from "../ui/motion-dot";
 import { type User } from "@shared/schema";
 
 // Icons
-import { 
-  Home, 
-  MessageCircle, 
-  Sparkles, 
-  ImageIcon, 
-  FileText 
+import {
+  Home,
+  MessageCircle,
+  Sparkles,
+  ImageIcon,
+  BookOpen,
+  Images,
+  Bell,
+  Youtube
 } from "lucide-react";
 
 type SidebarProps = {
@@ -20,11 +23,14 @@ export default function Sidebar({ user, currentPath }: SidebarProps) {
   const navItems = [
     { path: "/", label: "Home", icon: <Home className="mr-3 h-5 w-5" /> },
     { path: "/data-chat", label: "Chat", icon: <MessageCircle className="mr-3 h-5 w-5" /> },
+    { path: "/subscribe", label: "Daily Check-in", icon: <Bell className="mr-3 h-5 w-5" /> },
   ];
 
   const toolItems = [
-    { path: "/visual-inspiration", label: "Visual Inspiration", icon: <ImageIcon className="mr-3 h-5 w-5" /> },
-    { path: "/resources", label: "Wonder Library", icon: <FileText className="mr-3 h-5 w-5" /> },
+    { path: "/youtube-feed", label: "Mira's Videos", icon: <Youtube className="mr-3 h-5 w-5" /> },
+    { path: "/visual-inspiration", label: "Visual Inspiration", icon: <Sparkles className="mr-3 h-5 w-5" /> },
+    { path: "/wonder-library", label: "Wonder Library", icon: <Images className="mr-3 h-5 w-5" /> },
+    { path: "/wellness-library", label: "Wellness Library", icon: <BookOpen className="mr-3 h-5 w-5" /> },
   ];
 
   return (
@@ -34,7 +40,7 @@ export default function Sidebar({ user, currentPath }: SidebarProps) {
           <div className="h-8 w-8 rounded-lg cribbles-gradient flex items-center justify-center mr-3">
             <MotionDot />
           </div>
-          <h1 className="font-display font-bold text-xl text-darkGray">Cribbles</h1>
+          <h1 className="font-display font-bold text-lg text-darkGray leading-tight">Mira Solis<br /><span className="text-xs font-medium text-gray-400 tracking-widest uppercase">The 650 Method</span></h1>
         </div>
       </div>
       

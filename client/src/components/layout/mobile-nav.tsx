@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import MotionDot from "../ui/motion-dot";
-import { Home, MessageCircle, Images, BookOpen } from "lucide-react";
+import { Home, MessageCircle, Images, BookOpen, Youtube } from "lucide-react";
 
 type MobileNavProps = {
   currentPath: string;
@@ -15,7 +15,9 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
           <div className="h-8 w-8 rounded-lg cribbles-gradient flex items-center justify-center mr-3">
             <MotionDot />
           </div>
-          <h1 className="font-display font-bold text-xl text-darkGray">Cribbles</h1>
+          <h1 className="font-display font-bold text-base text-darkGray leading-tight">
+            Mira Solis <span className="text-xs font-medium text-gray-400">| The 650 Method</span>
+          </h1>
         </div>
       </nav>
 
@@ -39,6 +41,16 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
         >
           <MessageCircle className="h-5 w-5" />
           <span className="text-xs mt-1">Chat</span>
+        </Link>
+
+        <Link
+          href="/youtube-feed"
+          className={`flex flex-col items-center p-2 ${
+            currentPath === "/youtube-feed" ? "text-vibrantPink font-medium" : "text-darkGray/60 hover:text-darkGray"
+          }`}
+        >
+          <Youtube className="h-5 w-5" />
+          <span className="text-xs mt-1">Videos</span>
         </Link>
 
         <Link

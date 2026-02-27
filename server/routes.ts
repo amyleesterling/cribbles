@@ -578,6 +578,93 @@ export async function registerRoutes(app: Express): Promise<void> {
     res.json(images);
   });
 
+  // YouTube Feed API — fetches Mira Solis's latest videos via YouTube RSS
+  let youtubeChannelIdCache: string | null = null;
+
+  async function getYouTubeChannelId(): Promise<string> {
+    if (youtubeChannelIdCache) return youtubeChannelIdCache;
+
+    const res = await fetch("https://www.youtube.com/@MiraSolis-fitness", {
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
+    });
+
+    if (!res.ok) throw new Error("Could not fetch YouTube channel page");
+
+    const html = await res.text();
+
+    // Extract channel ID — appears as "channelId":"UC..."
+    const match = html.match(/"channelId":"(UC[a-zA-Z0-9_\-]+)"/);
+    if (!match) throw new Error("Could not extract channel ID from YouTube page");
+
+    youtubeChannelIdCache = match[1];
+    return match[1];
+  }
+
+  function parseYouTubeRss(xml: string) {
+    const videos: Array<{
+      id: string;
+      title: string;
+      publishedAt: string;
+      thumbnail: string;
+      description: string;
+      url: string;
+    }> = [];
+
+    const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
+    let entryMatch;
+
+    while ((entryMatch = entryRegex.exec(xml)) !== null) {
+      const entry = entryMatch[1];
+
+      const videoIdMatch = entry.match(/<yt:videoId>(.*?)<\/yt:videoId>/);
+      const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/);
+      const publishedMatch = entry.match(/<published>(.*?)<\/published>/);
+      const thumbnailMatch = entry.match(/url="(https:\/\/i\.ytimg\.com[^"]+)"/);
+      const descMatch = entry.match(/<media:description>([\s\S]*?)<\/media:description>/);
+
+      if (videoIdMatch && titleMatch) {
+        const videoId = videoIdMatch[1].trim();
+        const decode = (s: string) =>
+          s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
+
+        videos.push({
+          id: videoId,
+          title: decode(titleMatch[1]),
+          publishedAt: publishedMatch?.[1]?.trim() || "",
+          thumbnail: thumbnailMatch?.[1] || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+          description: decode(descMatch?.[1] || "").slice(0, 200),
+          url: `https://www.youtube.com/watch?v=${videoId}`,
+        });
+      }
+    }
+
+    return videos;
+  }
+
+  app.get("/api/youtube-feed", async (req, res) => {
+    try {
+      const channelId = await getYouTubeChannelId();
+
+      const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+      const rssRes = await fetch(rssUrl, {
+        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
+      });
+
+      if (!rssRes.ok) throw new Error("Could not fetch YouTube RSS feed");
+
+      const xml = await rssRes.text();
+      const videos = parseYouTubeRss(xml);
+
+      res.json({
+        videos,
+        channelUrl: "https://www.youtube.com/@MiraSolis-fitness",
+      });
+    } catch (error: any) {
+      console.error("YouTube feed error:", error);
+      res.status(500).json({ message: error?.message || "Could not load YouTube feed" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

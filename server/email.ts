@@ -74,10 +74,10 @@ export async function sendDailyCheckinEmail(params: {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Daily Cribbles Check-in</title>
+  <title>Your Daily 650 Method Check-in</title>
 </head>
-<body style="margin:0;padding:0;background-color:#FFF9F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFF9F9;padding:32px 16px;">
+<body style="margin:0;padding:0;background-color:#FAF9F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF9F7;padding:32px 16px;">
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
@@ -89,7 +89,8 @@ export async function sendDailyCheckinEmail(params: {
                 <tr>
                   <td>
                     <span style="display:inline-block;width:28px;height:28px;background:linear-gradient(135deg,#7BDFFF 0%,#F593D2 100%);border-radius:7px;vertical-align:middle;margin-right:8px;"></span>
-                    <span style="font-size:18px;font-weight:700;color:#2F2D30;vertical-align:middle;">Cribbles</span>
+                    <span style="font-size:16px;font-weight:700;color:#2F2D30;vertical-align:middle;">Mira Solis</span>
+                    <span style="font-size:11px;font-weight:500;color:#9CA3AF;vertical-align:middle;margin-left:4px;text-transform:uppercase;letter-spacing:0.06em;">| The 650 Method</span>
                   </td>
                   <td align="right">
                     <span style="font-size:12px;color:#9CA3AF;">${today}</span>
@@ -103,7 +104,7 @@ export async function sendDailyCheckinEmail(params: {
           <tr>
             <td style="padding-bottom:24px;">
               <h1 style="margin:0;font-size:28px;font-weight:700;color:#2F2D30;line-height:1.2;">${greeting}, ${params.name} ✨</h1>
-              <p style="margin:8px 0 0;font-size:15px;color:#6B7280;">Here's your daily moment of calm.</p>
+              <p style="margin:8px 0 0;font-size:15px;color:#6B7280;">Here's your daily moment of calm from the 650 Method.</p>
             </td>
           </tr>
 
@@ -141,7 +142,7 @@ export async function sendDailyCheckinEmail(params: {
                 style="background:#FFFFFF;border-radius:16px;border-left:4px solid #7BDFFF;padding:0;">
                 <tr>
                   <td style="padding:22px 24px;">
-                    <p style="margin:0 0 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:#7BDFFF;">Today's Wellness Tip</p>
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:#7BDFFF;">Today's 650 Wellness Tip</p>
                     <p style="margin:0;font-size:15px;color:#374151;line-height:1.65;">${tip}</p>
                   </td>
                 </tr>
@@ -152,9 +153,9 @@ export async function sendDailyCheckinEmail(params: {
           <!-- CTA button -->
           <tr>
             <td align="center" style="padding-bottom:32px;">
-              <a href="${process.env.APP_URL || 'https://cribbles.ai'}"
+              <a href="${process.env.APP_URL || 'https://cribbles-production.up.railway.app'}"
                 style="display:inline-block;background:linear-gradient(135deg,#7BDFFF 0%,#F593D2 100%);color:#FFFFFF;text-decoration:none;padding:13px 36px;border-radius:50px;font-size:15px;font-weight:600;">
-                Open Cribbles &rarr;
+                Open The 650 Method &rarr;
               </a>
             </td>
           </tr>
@@ -163,7 +164,7 @@ export async function sendDailyCheckinEmail(params: {
           <tr>
             <td align="center" style="border-top:1px solid #E5E7EB;padding-top:20px;">
               <p style="margin:0;font-size:12px;color:#9CA3AF;line-height:1.6;">
-                You're receiving this because you subscribed to daily check-ins on Cribbles.<br/>
+                You're receiving this because you subscribed to daily check-ins from Mira Solis | The 650 Method.<br/>
                 One email per day. Unsubscribe anytime from the app.
               </p>
             </td>
@@ -177,9 +178,9 @@ export async function sendDailyCheckinEmail(params: {
 </html>`;
 
   return getResend().emails.send({
-    from: "Cribbles <onboarding@resend.dev>", // update to noreply@cribbles.ai once domain is verified in Resend
+    from: "Mira Solis | The 650 Method <onboarding@resend.dev>",
     to: params.to,
-    subject: `${greeting}, ${params.name} ✨ — your daily check-in`,
+    subject: `${greeting}, ${params.name} ✨ — your 650 Method daily check-in`,
     html,
   });
 }

@@ -13,6 +13,7 @@ import Resources from "@/pages/resources";
 import VisualInspiration from "@/pages/visual-inspiration";
 import WonderLibrary from "@/pages/wonder-library";
 import WellnessLibrary from "@/pages/wellness-library";
+import YouTubeFeed from "@/pages/youtube-feed";
 import Subscribe from "@/pages/subscribe";
 import NotFound from "@/pages/not-found";
 
@@ -51,6 +52,7 @@ function App() {
         <Route path="/visual-inspiration" component={VisualInspiration} />
         <Route path="/wonder-library" component={WonderLibrary} />
         <Route path="/wellness-library" component={WellnessLibrary} />
+        <Route path="/youtube-feed" component={YouTubeFeed} />
         <Route path="/subscribe" component={Subscribe} />
         <Route component={NotFound} />
       </Switch>
